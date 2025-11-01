@@ -31,50 +31,49 @@
         body {
             background-color: var(--bg-color);
             color: var(--text-color);
-            font-family: var(--font-family); /* Menggunakan variabel baru */
-            font-size: calc(var(--font-size-base) * 1em); /* Menggunakan variabel baru */
+            font-family: var(--font-family); 
+            font-size: calc(var(--font-size-base) * 1em); 
             margin: 0;
             padding: 20px;
             min-height: 100vh;
             text-shadow: 0 0 5px rgba(0, 255, 170, 0.3);
             transition: background-color 0.3s, color 0.3s, text-shadow 0.3s;
-            display: flex; /* Aktifkan Flexbox di body */
+            display: flex; 
             justify-content: center;
-            align-items: center; /* PENTING: Untuk centering vertikal main-container */
+            align-items: flex-start;
         }
 
-        /* CONTAINER UTAMA UNTUK LAYOUT SAMPINGAN */
+        /* CONTAINER UTAMA UNTUK LAYOUT DENGAN WIDGET */
         .main-container {
             display: flex;
             width: 100%;
-            max-width: 1200px; /* Batasan lebar keseluruhan */
-            margin: 0;
-            align-items: center; /* Diubah untuk centering horizontal konten */
+            max-width: 1200px; /* Lebar dikurangi karena widget hilang */
+            margin: 0 auto; 
+            margin-top: var(--margin-top-banner); 
+            align-items: flex-start;
+            gap: 60px; /* Jarak antar kolom diperbesar */
         }
-        
+
         /* KOLOM KIRI: BANNER/COVER */
         .banner-column {
-            flex: 0 0 350px; /* Lebar tetap 350px untuk banner */
-            margin-right: 40px;
-            margin-top: var(--margin-top-banner); /* Menggunakan variabel baru */
+            flex: 0 0 350px; 
+            margin-top: 0; 
         }
 
         .banner-column img { 
             width: 100%; 
-            /* Memberi tinggi default agar layout tidak berantakan sebelum image terload */
             height: 500px; 
             display: block; 
             border-radius: var(--border-radius); 
             box-shadow: 0 0 15px var(--text-color); 
             transition: box-shadow 0.3s, border-radius 0.3s; 
-            /* PENTING: object-fit untuk GIF/gambar vertikal */
             object-fit: cover; 
         }
 
         /* KOLOM KANAN: KONTEN (Search, Links, Footer) */
         .content-column {
-            flex-grow: 1; /* Ambil sisa ruang yang ada */
-            margin-top: var(--margin-top-banner); /* Samakan margin atas dengan banner */
+            flex-grow: 1; 
+            margin-top: 0; 
         }
         
         a {
@@ -88,14 +87,13 @@
             text-decoration: underline;
         }
 
-        /* FIX: Menambahkan specificity agar link hover di dropdown juga bekerja */
         .category ul li a:hover {
             color: var(--hover-color); 
             text-decoration: underline;
         }
         
         .search-container { 
-            margin-bottom: var(--margin-bottom-search); /* Menggunakan variabel baru */
+            margin-bottom: var(--margin-bottom-search); 
             width: 100%; max-width: 600px; text-align: left; 
         }
         #search-input { 
@@ -112,10 +110,9 @@
             transition: border-color 0.3s, box-shadow 0.3s, border-radius 0.3s; 
         }
         .link-columns { 
-            /* Mengubah dari flex-wrap ke grid untuk layout 2 kolom responsif */
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px 40px; /* Jarak vertikal dan horizontal */
+            gap: 20px 40px; 
             width: 100%; 
             max-width: 800px; 
             margin-bottom: 80px; 
@@ -126,7 +123,7 @@
             gap: 30px; 
         }
         
-        /* DROPDOWN MENGGANTUNG DIBUAT DENGAN HOVER */
+        /* DROPDOWN MENGGANTUNG */
         .category { 
             min-width: 200px; 
             position: relative; 
@@ -140,9 +137,7 @@
             list-style: none; 
             padding: 5px 15px; 
             position: absolute; 
-            /* EDIT MANUAL DI SINI: Ubah nilai 50px sesuai keinginanmu */
-            left: 50px; 
-            /* Overlap agar celah hilang */
+            left: 20px; 
             top: 100%; 
             margin-top: -10px; 
             display: none; 
@@ -158,120 +153,138 @@
         .category:hover h3::before { content: 'v'; }
         
         .category ul li { 
-            margin-bottom: var(--line-spacing); /* Menggunakan variabel baru */
+            margin-bottom: var(--line-spacing); 
             font-size: 0.9em; 
         }
         .category ul li::before { content: '>> '; color: var(--text-color); }
         
         .footer-options { 
             width: 100%; 
-            max-width: 800px; /* Samakan dengan lebar link-columns */
+            max-width: 800px; 
             display: flex; 
-            justify-content: flex-start; /* Sejajarkan ke kiri */
+            justify-content: flex-start; 
             gap: 30px; 
             font-size: 0.9em; 
             text-align: center; 
             margin-top: 40px;
         }
 
-        /* MODALS (Tidak Berubah) */
-        .modal { display: none; position: fixed; z-index: 20; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0, 0, 0, 0.8); }
+        /* --- MODAL STYLES FIX --- */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1000; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0, 0, 0, 0.9); 
+            padding-top: 50px;
+        }
+
         .modal-content {
             background-color: var(--bg-color);
             color: var(--text-color);
-            margin: 10% auto;
-            padding: 20px;
+            margin: 5% auto; 
+            padding: 30px;
             border: 2px solid var(--text-color);
-            width: 90%;
-            max-width: 700px; 
-            box-shadow: 0 0 15px var(--text-color);
-            font-size: 1em;
-            border-radius: var(--border-radius);
-            transition: border-radius 0.3s;
-        }
-        .close-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; }
-        .close-btn:hover, .close-btn:focus { color: #fff; text-decoration: none; cursor: pointer; }
-        .modal-content label { display: block; margin-top: 10px; margin-bottom: 5px; }
-        .modal-content input[type="color"], 
-        .modal-content input[type="text"], 
-        .modal-content select,
-        .modal-content input[type="range"] { 
-            width: 98%; 
-            padding: 8px; 
-            margin-top: 5px; 
-            background: var(--bg-color); 
-            color: var(--text-color); 
-            border: 1px solid var(--text-color); 
-            font-family: var(--font-family); 
-            font-size: 1em; 
-            outline: none; 
-            box-sizing: border-box; 
-        }
-        .modal-content input[type="color"] { width: 50px; padding: 0; margin-left: 10px; height: 30px; }
-        .modal-content input[type="range"] { 
+            box-shadow: 0 0 20px var(--text-color);
             width: 80%; 
-            margin-left: 10px;
-            padding: 0;
-            border: none;
+            max-width: 600px; 
+            border-radius: var(--border-radius);
+            position: relative;
         }
-        .modal-content button { 
-            background-color: var(--text-color); 
-            color: var(--bg-color); 
-            border: none; padding: 8px 15px; 
-            margin-top: 20px; cursor: pointer; 
-            font-family: var(--font-family); margin-right: 5px; 
-        }
-        .modal-content button:hover { opacity: 0.8; }
 
-        #link-list-container {
-            margin-top: 20px;
-            max-height: 400px;
-            overflow-y: auto;
-            border-top: 1px solid var(--text-color);
-            padding-top: 10px;
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            line-height: 1; 
         }
-        .edit-category-group { margin-bottom: 25px; }
-        .edit-category-group h4 { font-size: 1em; text-transform: uppercase; border-bottom: 1px dashed var(--text-color); padding-bottom: 5px; margin-bottom: 10px; }
-        .edit-link-item { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px dotted rgba(0, 255, 170, 0.2); }
-        .edit-link-info { font-size: 0.9em; word-break: break-all; }
-        .edit-link-info span { display: block; opacity: 0.7; font-size: 0.8em; }
-        .edit-link-actions button { background-color: var(--text-color); color: var(--bg-color); padding: 3px 8px; margin: 0 2px; font-size: 0.8em; margin-top: 0; }
+
+        .close-btn:hover,
+        .close-btn:focus {
+            color: var(--hover-color);
+            text-decoration: none;
+            cursor: pointer;
+        }
         
-        @media (max-width: 768px) {
-            /* Ubah Flexbox menjadi tumpukan vertikal di layar kecil */
-            .main-container { flex-direction: column; align-items: center; }
+        .modal-content label { display: block; margin-top: 10px; font-size: 0.9em; }
+        .modal-content input[type="text"], 
+        .modal-content input[type="color"],
+        .modal-content select {
+            width: 100%; padding: 8px; margin-top: 5px; 
+            background: var(--bg-color); color: var(--text-color); 
+            border: 1px solid var(--text-color); box-sizing: border-box; 
+            border-radius: var(--border-radius);
+        }
+        .modal-content input[type="range"] {
+            width: 100%; margin-top: 10px;
+        }
+        .modal-content button {
+            background: var(--text-color); color: var(--bg-color); 
+            border: none; padding: 10px 15px; cursor: pointer; 
+            margin-top: 20px; border-radius: var(--border-radius);
+            font-family: var(--font-family); font-size: 0.9em;
+            transition: background 0.2s;
+        }
+        .modal-content button:hover {
+            background: var(--hover-color);
+        }
+
+        /* Edit Link List Style */
+        .edit-link-item {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px dashed rgba(0, 255, 170, 0.3); padding: 8px 0;
+        }
+        .edit-link-item span { display: block; font-size: 0.7em; opacity: 0.6; }
+        .edit-link-actions button { margin-left: 5px; padding: 5px 10px; margin-top: 0; }
+        .edit-category-group { margin-bottom: 20px; }
+        .edit-category-group h4 { margin-top: 15px; margin-bottom: 5px; color: var(--hover-color); }
+
+
+        /* Responsive Layout untuk Mobile/Tablet */
+        @media (max-width: 1200px) {
+            .main-container { flex-direction: column; align-items: center; max-width: 768px; }
+            /* Hapus widget-column */
             .banner-column { 
-                flex: none; /* Nonaktifkan flex */
+                flex: none; 
                 width: 100%; 
-                max-width: 400px; /* Batasi lebar banner di mobile */
-                margin-right: 0; 
+                max-width: 400px; 
                 margin-bottom: 40px; 
             }
             .content-column { 
                 width: 100%; 
-                margin-top: 0; 
                 padding: 0 10px; 
+                margin-top: 0; 
             }
-            .search-container { text-align: center; }
+            .search-container { text-align: center; max-width: 100%; }
             #search-input { width: 95%; }
-            .link-columns { grid-template-columns: 1fr; max-width: none; }
-            .category-group { width: 100%; }
+            .link-columns { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); max-width: none; }
             .footer-options { justify-content: center; max-width: none; flex-wrap: wrap; }
             .modal-content { margin: 5% auto; width: 95%; }
         }
+
+        @media (max-width: 768px) {
+            .banner-column { max-width: 90%; }
+            .link-columns { grid-template-columns: 1fr; }
+        }
+
     </style>
 </head>
 <body>
     
 <div class="main-container">
-    
+
     <!-- KOLOM KIRI (BANNER) -->
     <div class="banner-column">
         <!-- Gambar Cover Vertikal/Kotak -->
         <img id="main-banner" src="https://picsum.photos/id/431/350/500" alt="Startpage Banner">
     </div>
 
-    <!-- KOLOM KANAN (CONTENT) -->
+    <!-- KOLOM KANAN (CONTENT: Search, Links, Footer) -->
     <div class="content-column">
         
         <div class="search-container">
@@ -321,7 +334,7 @@
             <h4 style="margin-top: 30px;">FONTO DAN UKURAN</h4>
             <label for="font-family-select">Jenis Font (Monospace):</label>
             <select id="font-family-select">
-                <option value="'Fira Code', monospace">Fira Code (Default)</option>
+                <option value="'Fira Code', 'DejaVu Sans Mono', monospace">Fira Code (Default)</option>
                 <option value="'JetBrains Mono', monospace">JetBrains Mono</option>
                 <option value="'Cousine', monospace">Cousine</option>
                 <option value="'DejaVu Sans Mono', monospace">DejaVu Sans Mono</option>
@@ -344,7 +357,7 @@
             <button type="submit">Simpan dan Terapkan</button>
         </form>
         <button id="reset-btn">Kembalikan ke Default</button>
-        <p style="margin-top: 10px; font-size: 0.8em;">*Pengaturan disimpan hanya di browser-mu.</p>
+        <p style="margin-top: 10px; font-size: 0.8em;">*Pengaturan disimpan di Cloud Firestore.</p>
     </div>
 </div>
 
@@ -393,42 +406,34 @@
     import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore.js";
 
     // --- 1. Konfigurasi Firebase Anda (HARUS SESUAI DENGAN PUNYA KAMU) ---
-    // Konfigurasi ini diambil dari tangkapan layar Firebase yang kamu kirim sebelumnya.
-    const firebaseConfig = {
-      apiKey: "AIzaSyDVYsxICgwsOFViMm162rIr4D29fZim3jo",
-      authDomain: "startpages-64b35.firebaseapp.com",
-      projectId: "startpages-64b35",
-      storageBucket: "startpages-64b35.firebasestorage.app",
-      messagingSenderId: "739237049043",
-      appId: "1:739237049043:web:9a0f33ad13a76111165a26"
-    };
+    // Gunakan konfigurasi global dari Canvas
+    const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
-    // Initialize Firebase
-    // Pastikan ini berjalan tanpa error!
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // ID Unik Data: HARUS SAMA DENGAN NAMA DOKUMEN DI SECURITY RULES FIREBASE
-    const USER_DATA_ID = "StartpageData"; 
-    console.log("Firebase initialized. Connecting to doc: users/StartpageData");
-
+    // Path dokumen untuk menyimpan data startpage (public data)
+    const USER_DATA_PATH = `artifacts/${appId}/public/data/startpage_config/global`;
+    
     // --- 2. Konfigurasi Default & Global Scope ---
 
+    // Gunakan camelCase untuk kunci settings, agar mudah disimpan/ambil dari JSON
     const defaultSettings = {
         // WARNA
-        '--bg-color': '#000000',
-        '--text-color': '#00ffaa',
-        '--hover-color': '#ffffff',
-        '--border-radius': '0px',
+        bgColor: '#000000',
+        textColor: '#00ffaa',
+        hoverColor: '#ffffff',
+        borderRadius: '0px',
         // BANNER URL
-        'bannerUrl': 'https://picsum.photos/id/431/350/500', 
+        bannerUrl: 'https://picsum.photos/id/431/350/500', 
         // FONT
-        '--font-family': "'Fira Code', 'DejaVu Sans Mono', monospace",
-        '--font-size-base': '1.0', // dalam em
-        '--line-spacing': '5px',
+        fontFamily: "'Fira Code', 'DejaVu Sans Mono', monospace",
+        fontSizeBase: '1.0', // dalam em
+        lineSpacing: '5px',
         // MARGIN
-        '--margin-top-banner': '20px',
-        '--margin-bottom-search': '50px'
+        marginTopBanner: '20px',
+        marginBottomSearch: '50px'
     };
 
     // Struktur Default Link (Akan digunakan jika Cloud Data kosong)
@@ -452,14 +457,23 @@
         ]}
     ];
 
-    // --- 3. Elemen DOM (Hanya yang perlu diakses) ---
+    let globalData = {
+        links: defaultLinks,
+        settings: defaultSettings
+    };
 
+
+    // --- 3. Elemen DOM ---
     const root = document.documentElement;
     const configModal = document.getElementById('config-modal');
     const editModal = document.getElementById('edit-modal');
     const addModal = document.getElementById('add-modal'); 
     const searchInput = document.getElementById('search-input');
     const mainBanner = document.getElementById('main-banner'); 
+    const linkColumnsContainer = document.getElementById('link-columns');
+    const linkListContainer = document.getElementById('link-list-container');
+    const addLinkForm = document.getElementById('add-link-form'); 
+    const linkCategorySelect = document.getElementById('link-category'); 
     
     // Config form elements
     const bannerUrlInput = document.getElementById('banner-url-input'); 
@@ -474,92 +488,99 @@
     const marginBottomSearchInput = document.getElementById('margin-bottom-search-input');
     const marginBottomSearchValueSpan = document.getElementById('margin-bottom-search-value');
     
-    const linkColumnsContainer = document.getElementById('link-columns');
-    const linkListContainer = document.getElementById('link-list-container');
-    const addLinkForm = document.getElementById('add-link-form'); 
-    const linkCategorySelect = document.getElementById('link-category'); 
-    
     // --- 4. Fungsi Utama Cloud Sync ---
 
-    /** Mendapatkan link dari Firestore. Jika tidak ada, simpan Default Links. */
-    async function getLinks() {
+    /** Mendapatkan seluruh data (links dan settings) dari Firestore. */
+    async function loadData() {
         const loadingText = document.getElementById('loading-text');
         
         try {
-            // Path: koleksi 'users', dokumen ID 'StartpageData' (sesuai rules)
-            const docRef = doc(db, "users", USER_DATA_ID);
+            const docRef = doc(db, USER_DATA_PATH);
             const docSnap = await getDoc(docRef);
             
-            if (loadingText) loadingText.remove(); // Hapus teks loading jika berhasil koneksi
-
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                return data.links || defaultLinks; // Kembalikan data link dari cloud
+                
+                // Pastikan links adalah array, jika null/undefined, gunakan defaultLinks
+                const loadedLinks = Array.isArray(data.links) ? data.links : defaultLinks;
+                
+                // Gabungkan settings yang tersimpan dengan default settings (untuk properti baru)
+                const loadedSettings = Object.assign({}, defaultSettings, data.settings);
+                
+                globalData.links = loadedLinks;
+                globalData.settings = loadedSettings;
+
             } else {
-                // Jika data belum ada di Cloud, simpan default link dulu
-                console.warn("No data found in Cloud. Saving default links.");
-                await saveLinks(defaultLinks);
-                return defaultLinks;
+                console.warn("No data found in Cloud. Saving default data.");
+                // Jika tidak ada data sama sekali, simpan data default
+                await setDoc(docRef, globalData);
             }
+            
+            if (loadingText && loadingText.parentNode) {
+                // Hanya hapus loading text jika data sudah siap
+                loadingText.parentNode.removeChild(loadingText);
+            } 
+
         } catch (e) {
             console.error("Gagal mengambil data dari Cloud Firestore:", e);
             if (loadingText) {
-                loadingText.textContent = "Koneksi Cloud Gagal. Memuat data lokal.";
+                loadingText.textContent = "Koneksi Cloud Gagal. Menggunakan data default.";
                 loadingText.style.color = "red";
             }
-            
-            // Fallback ke Local Storage jika Cloud gagal
-            const savedLinks = localStorage.getItem('ichi_links');
-            if (savedLinks) {
-                return JSON.parse(savedLinks);
-            }
-            console.error("Gagal memuat data link dari mana pun. Menggunakan link default.");
-            return defaultLinks;
+            // Jika GAGAL, tetap gunakan globalData yang berisi nilai default
         }
+        return globalData;
     }
 
-    /** Menyimpan link ke Firestore. */
+    /** Menyimpan hanya properti links ke Firestore. */
     async function saveLinks(links) {
         // Filter kategori yang tidak punya link (supaya bersih)
         const filteredLinks = links.filter(cat => cat.links && cat.links.length > 0);
         
-        // Simpan ke Local Storage sebagai Fallback
-        localStorage.setItem('ichi_links', JSON.stringify(filteredLinks));
-
         try {
-            const docRef = doc(db, "users", USER_DATA_ID);
-            await setDoc(docRef, { links: filteredLinks }, { merge: true }); // Merge agar setting tidak terhapus
+            const docRef = doc(db, USER_DATA_PATH);
+            // Simpan hanya links, dan merge agar settings tidak terhapus
+            await setDoc(docRef, { links: filteredLinks }, { merge: true }); 
             
-            // Re-render tampilan setelah menyimpan
+            globalData.links = filteredLinks;
+
             renderLinksToStartpage(filteredLinks);
             populateCategorySelect(filteredLinks);
 
         } catch (e) {
             console.error("Gagal menyimpan link ke Cloud Firestore:", e);
-            // Tambahkan notifikasi error ke user jika gagal simpan
-            console.error('Gagal menyimpan data ke Cloud. Cek Console Log untuk detail.');
         }
     }
+    
+    /** Menyimpan hanya properti settings ke Firestore. */
+    async function saveSettings(settings) {
+        try {
+            const docRef = doc(db, USER_DATA_PATH);
+            // Simpan hanya settings, dan merge agar links tidak terhapus
+            await setDoc(docRef, { settings: settings }, { merge: true }); 
+            globalData.settings = settings;
+
+        } catch (e) {
+            console.error("Gagal menyimpan setting ke Cloud Firestore:", e);
+        }
+    }
+
 
     // --- 5. Render & Global Functions ---
 
     // Fungsi untuk update banner image
     function updateBannerImage(url) {
-        // Cek jika URL adalah string kosong, gunakan placeholder
         if (!url || url.trim() === '') {
             mainBanner.src = defaultSettings.bannerUrl;
         } else {
             mainBanner.src = url;
-            // Ini opsional: atur tinggi agar fleksibel dengan gambar asli
-            mainBanner.style.height = 'auto'; 
+            mainBanner.style.height = '500px'; // Set kembali ke tinggi fix
         }
     }
 
 
     function renderLinksToStartpage(links) {
         let html = '';
-        
-        // Reset container
         linkColumnsContainer.innerHTML = '';
 
         links.forEach((category) => {
@@ -582,7 +603,8 @@
 
     // Dipanggil saat Edit Link
     window.renderEditModal = async function() {
-        const allLinks = await getLinks();
+        // Ambil dari globalData yang sudah dimuat
+        const allLinks = globalData.links;
         let html = '';
 
         allLinks.forEach((category) => {
@@ -590,7 +612,6 @@
             html += `<h4>${category.name}</h4>`;
             
             category.links.forEach((link, linkIndex) => {
-                // Gunakan escape untuk mencegah error di onclick attribute
                 const categoryEscaped = category.name.replace(/'/g, "\\'");
                 html += `
                     <div class="edit-link-item" data-category="${category.name}" data-index="${linkIndex}" data-custom="${link.isCustom}">
@@ -615,12 +636,13 @@
 
     // Global: Edit Link
     window.editLink = async function(categoryName, linkIndex) {
-        let links = await getLinks();
+        let links = globalData.links;
         const category = links.find(cat => cat.name === categoryName);
         if (!category) return;
 
         const link = category.links[linkIndex];
         
+        // Ganti alert/prompt dengan modal kustom jika ini adalah aplikasi di luar Canvas
         const newText = prompt(`Edit Teks untuk "${link.text}":`, link.text);
         if (newText === null || newText.trim() === "") return; 
 
@@ -631,22 +653,22 @@
         link.url = newUrl.trim();
         link.isCustom = true; 
 
-        await saveLinks(links); 
+        await saveLinks([...links]); // Simpan copy array
         window.renderEditModal(); 
     }
 
     // Global: Delete Link
     window.deleteLink = async function(categoryName, linkIndex) {
-        if (!confirm('Yakin ingin menghapus link ini? (Perubahan akan disimpan di Cloud)')) return;
+        // Ganti alert/prompt dengan modal kustom jika ini adalah aplikasi di luar Canvas
+        if (!window.confirm('Yakin ingin menghapus link ini? (Perubahan akan disimpan di Cloud)')) return;
         
-        let links = await getLinks();
+        let links = globalData.links;
         const category = links.find(cat => cat.name === categoryName);
         if (!category) return;
 
-
         category.links.splice(linkIndex, 1); 
         
-        // Hapus kategori jika kosong
+        // Hapus kategori jika sudah tidak ada link di dalamnya
         if (category.links.length === 0) {
             const categoryIndex = links.findIndex(cat => cat.name === categoryName);
             if (categoryIndex !== -1) {
@@ -654,14 +676,15 @@
             }
         }
 
-        await saveLinks(links); 
+        await saveLinks([...links]); 
         window.renderEditModal(); 
     }
 
     // Fungsi Add Link
     function populateCategorySelect(links) {
         linkCategorySelect.innerHTML = '<option value="">-- Pilih Kategori --</option>'; 
-        const categories = links.map(cat => cat.name).sort(); // Urutkan kategori
+        // Pastikan links adalah array sebelum memproses
+        const categories = (Array.isArray(links) ? links : []).map(cat => cat.name).sort(); 
         
         categories.forEach(catName => {
             const option = document.createElement('option');
@@ -691,7 +714,7 @@
             return;
         }
 
-        let links = await getLinks(); // Dapatkan data terbaru dari Cloud
+        let links = globalData.links; 
         let existingCategory = links.find(cat => cat.name.toLowerCase() === categoryName.toLowerCase());
 
         const newLink = { text: text, url: url, isCustom: true };
@@ -699,84 +722,73 @@
         if (existingCategory) {
             existingCategory.links.push(newLink);
         } else {
+            // Tambahkan kategori baru
             const newCategoryObject = { name: categoryName, links: [newLink] };
             links.push(newCategoryObject);
         }
 
-        await saveLinks(links); // Simpan kembali ke Cloud
+        await saveLinks([...links]); // Simpan ke Cloud
 
-        // Reset form dan sembunyikan modal
         addLinkForm.reset();
         document.getElementById('link-url').value = 'https://';
         addModal.style.display = 'none';
         
-        // Panggil renderLinksToStartpage secara eksplisit
-        const updatedLinks = await getLinks();
-        renderLinksToStartpage(updatedLinks);
+        // Render ulang (sudah dipanggil di saveLinks, tapi jaga-jaga)
+        renderLinksToStartpage(globalData.links);
     });
 
-    // --- 6. Logika Konfigurasi Warna & Banner (Menggunakan Local Storage) ---
+    // --- 6. Logika Konfigurasi Warna & Banner ---
 
-    // Mengambil nilai range yang valid
-    function getRangeValue(inputElement, defaultValue) {
-        return inputElement.value ? inputElement.value : defaultValue;
-    }
-
-    // Memuat pengaturan dari Local Storage atau default
-    function loadAndApplySettings() {
-        let settings = defaultSettings;
-        const savedSettings = localStorage.getItem('ichi_settings');
-        
-        if (savedSettings) {
-            // Gunakan Object.assign untuk memastikan properti baru (bannerUrl) ada
-            settings = Object.assign({}, defaultSettings, JSON.parse(savedSettings)); 
-        }
+    function loadAndApplySettings(settings) {
+        // Ambil settings dari globalData jika tidak diberikan
+        const currentSettings = settings || globalData.settings;
         
         // Terapkan semua properti CSS ke root
-        for (const [key, value] of Object.entries(settings)) {
-            // Hanya properti CSS yang dimulai dengan '--' yang dimasukkan ke root
-            if (key.startsWith('--')) {
-                root.style.setProperty(key, value);
-            }
-        }
+        root.style.setProperty('--bg-color', currentSettings.bgColor);
+        root.style.setProperty('--text-color', currentSettings.textColor);
+        root.style.setProperty('--hover-color', currentSettings.hoverColor);
+        // Pastikan ada unit 'px'
+        root.style.setProperty('--border-radius', currentSettings.borderRadius.endsWith('px') ? currentSettings.borderRadius : currentSettings.borderRadius + 'px');
+        root.style.setProperty('--font-family', currentSettings.fontFamily);
+        root.style.setProperty('--font-size-base', currentSettings.fontSizeBase.endsWith('em') ? currentSettings.fontSizeBase : currentSettings.fontSizeBase + 'em');
+        root.style.setProperty('--line-spacing', currentSettings.lineSpacing.endsWith('px') ? currentSettings.lineSpacing : currentSettings.lineSpacing + 'px');
+        root.style.setProperty('--margin-top-banner', currentSettings.marginTopBanner.endsWith('px') ? currentSettings.marginTopBanner : currentSettings.marginTopBanner + 'px');
+        root.style.setProperty('--margin-bottom-search', currentSettings.marginBottomSearch.endsWith('px') ? currentSettings.marginBottomSearch : currentSettings.marginBottomSearch + 'px');
         
-        // Update input field values in config modal
-        document.getElementById('bg-color-input').value = settings['--bg-color'] || defaultSettings['--bg-color'];
-        document.getElementById('text-color-input').value = settings['--text-color'] || defaultSettings['--text-color'];
-        document.getElementById('hover-color-input').value = settings['--hover-color'] || defaultSettings['--hover-color'];
-        
-        // BANNER URL
-        const currentBannerUrl = settings['bannerUrl'] || defaultSettings.bannerUrl;
-        bannerUrlInput.value = currentBannerUrl;
-        updateBannerImage(currentBannerUrl); // Terapkan URL ke <img>
+        // Terapkan Banner
+        updateBannerImage(currentSettings.bannerUrl); 
 
-        // Update input range/select dan value span
-        
+        // Update input field values in config modal (Ini yang memastikan modal menunjukkan nilai yang sedang aktif)
+        document.getElementById('bg-color-input').value = currentSettings.bgColor;
+        document.getElementById('text-color-input').value = currentSettings.textColor;
+        document.getElementById('hover-color-input').value = currentSettings.hoverColor;
+        bannerUrlInput.value = currentSettings.bannerUrl;
+
         // Radius
-        const currentRadius = parseInt(settings['--border-radius']) || 0;
+        const currentRadius = parseInt(currentSettings.borderRadius) || 0;
         radiusInput.value = currentRadius;
         radiusValueSpan.textContent = currentRadius;
 
         // Font Family
-        document.getElementById('font-family-select').value = settings['--font-family'] || defaultSettings['--font-family'];
+        document.getElementById('font-family-select').value = currentSettings.fontFamily;
         
         // Font Size
-        const currentFontSize = parseFloat(settings['--font-size-base']) || 1.0;
+        const currentFontSize = parseFloat(currentSettings.fontSizeBase) || 1.0;
         fontSizeInput.value = currentFontSize;
         fontSizeValueSpan.textContent = currentFontSize.toFixed(2);
 
         // Line Spacing
-        const currentLineSpacing = parseInt(settings['--line-spacing']) || 5;
+        const currentLineSpacing = parseInt(currentSettings.lineSpacing) || 5;
         lineSpacingInput.value = currentLineSpacing;
         lineSpacingValueSpan.textContent = currentLineSpacing;
 
         // Margin Top Banner
-        const currentMarginTopBanner = parseInt(settings['--margin-top-banner']) || 20;
+        const currentMarginTopBanner = parseInt(currentSettings.marginTopBanner) || 20;
         marginTopBannerInput.value = currentMarginTopBanner;
         marginTopBannerValueSpan.textContent = currentMarginTopBanner;
 
         // Margin Bottom Search
-        const currentMarginBottomSearch = parseInt(settings['--margin-bottom-search']) || 50;
+        const currentMarginBottomSearch = parseInt(currentSettings.marginBottomSearch) || 50;
         marginBottomSearchInput.value = currentMarginBottomSearch;
         marginBottomSearchValueSpan.textContent = currentMarginBottomSearch;
     }
@@ -788,75 +800,50 @@
     marginTopBannerInput.oninput = function() { marginTopBannerValueSpan.textContent = this.value; }
     marginBottomSearchInput.oninput = function() { marginBottomSearchValueSpan.textContent = this.value; }
 
-    document.getElementById('color-config-form').addEventListener('submit', function(event) {
+    document.getElementById('color-config-form').addEventListener('submit', async function(event) {
         event.preventDefault();
         
-        // Ambil semua nilai dari form
-        const newBgColor = document.getElementById('bg-color-input').value;
-        const newTextColor = document.getElementById('text-color-input').value;
-        const newHoverColor = document.getElementById('hover-color-input').value;
-        const newRadius = getRangeValue(radiusInput, 0) + 'px';
-        const newFontFamily = document.getElementById('font-family-select').value;
-        const newFontSize = getRangeValue(fontSizeInput, 1.0);
-        const newLineSpacing = getRangeValue(lineSpacingInput, 5) + 'px';
-        const newMarginTopBanner = getRangeValue(marginTopBannerInput, 20) + 'px';
-        const newMarginBottomSearch = getRangeValue(marginBottomSearchInput, 50) + 'px';
-        const newBannerUrl = bannerUrlInput.value.trim(); 
-
-
-        // Terapkan ke Root Style
-        root.style.setProperty('--bg-color', newBgColor);
-        root.style.setProperty('--text-color', newTextColor);
-        root.style.setProperty('--hover-color', newHoverColor);
-        root.style.setProperty('--border-radius', newRadius);
-        root.style.setProperty('--font-family', newFontFamily);
-        root.style.setProperty('--font-size-base', newFontSize);
-        root.style.setProperty('--line-spacing', newLineSpacing);
-        root.style.setProperty('--margin-top-banner', newMarginTopBanner);
-        root.style.setProperty('--margin-bottom-search', newMarginBottomSearch);
-        
-        // Terapkan Banner
-        updateBannerImage(newBannerUrl);
-
-        // Simpan ke Local Storage
         const newSettings = { 
-            '--bg-color': newBgColor, 
-            '--text-color': newTextColor, 
-            '--hover-color': newHoverColor, 
-            '--border-radius': newRadius,
-            'bannerUrl': newBannerUrl, 
-            '--font-family': newFontFamily,
-            '--font-size-base': newFontSize,
-            '--line-spacing': newLineSpacing,
-            '--margin-top-banner': newMarginTopBanner,
-            '--margin-bottom-search': newMarginBottomSearch,
+            bgColor: document.getElementById('bg-color-input').value, 
+            textColor: document.getElementById('text-color-input').value, 
+            hoverColor: document.getElementById('hover-color-input').value, 
+            // Simpan sebagai string dengan unit agar konsisten saat dimuat ulang
+            borderRadius: radiusInput.value + 'px', 
+            bannerUrl: bannerUrlInput.value.trim(), 
+            fontFamily: document.getElementById('font-family-select').value,
+            fontSizeBase: fontSizeInput.value,
+            lineSpacing: lineSpacingInput.value + 'px',
+            marginTopBanner: marginTopBannerInput.value + 'px',
+            marginBottomSearch: marginBottomSearchInput.value + 'px',
         };
-        localStorage.setItem('ichi_settings', JSON.stringify(newSettings));
+
+        // 1. Terapkan ke DOM
+        loadAndApplySettings(newSettings); 
+
+        // 2. Simpan ke Cloud Firestore (Ini yang memastikan persisten)
+        await saveSettings(newSettings);
 
         configModal.style.display = 'none';
         
-        // Wajib reload untuk menerapkan perubahan margin/font agar body terupdate
-        window.location.reload(); 
+        console.log("Pengaturan disimpan ke Cloud dan diterapkan.");
     });
 
-    document.getElementById('reset-btn').addEventListener('click', function() {
-        localStorage.removeItem('ichi_settings');
-        // Terapkan default
-        for (const [key, value] of Object.entries(defaultSettings)) {
-            if (key.startsWith('--')) {
-                root.style.setProperty(key, value);
-            }
-        }
-        updateBannerImage(defaultSettings.bannerUrl);
-        // Force reload untuk memastikan CSS dan JS membaca default settings
-        window.location.reload();
+    document.getElementById('reset-btn').addEventListener('click', async function() {
+        
+        // 1. Simpan default settings ke Cloud
+        await saveSettings(defaultSettings); 
+        
+        // 2. Terapkan default ke DOM
+        loadAndApplySettings(defaultSettings);
+        
+        console.log("Pengaturan dikembalikan ke default dan disimpan ke Cloud.");
     });
 
     // --- 7. Logika Modal & Inisialisasi ---
 
     document.getElementById('config-btn').onclick = function(event) { event.preventDefault(); configModal.style.display = 'block'; }
     document.getElementById('edit-link-btn').onclick = function(event) { event.preventDefault(); window.renderEditModal(); }
-    document.getElementById('add-link-btn').onclick = function(event) { event.preventDefault(); addModal.style.display = 'block'; populateCategorySelect(getLinks()); } 
+    document.getElementById('add-link-btn').onclick = function(event) { event.preventDefault(); addModal.style.display = 'block'; populateCategorySelect(globalData.links); } 
 
     document.querySelectorAll('.config-close-btn').forEach(btn => btn.onclick = function() { configModal.style.display = 'none'; });
     document.querySelectorAll('.edit-close-btn').forEach(btn => btn.onclick = function() { editModal.style.display = 'none'; });
@@ -881,12 +868,15 @@
 
     // Panggil inisialisasi saat halaman dimuat
     window.onload = async function() {
-        // PENTING: Load pengaturan harus duluan sebelum render link
-        loadAndApplySettings(); 
+        // 1. Muat semua data (links dan settings) dari Cloud
+        await loadData(); 
         
-        const links = await getLinks();
-        renderLinksToStartpage(links);
-        populateCategorySelect(links);
+        // 2. Terapkan settings ke tampilan (CSS)
+        loadAndApplySettings(globalData.settings); 
+
+        // 3. Render links
+        renderLinksToStartpage(globalData.links);
+        populateCategorySelect(globalData.links);
     };
 </script>
 
