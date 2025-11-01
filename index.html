@@ -12,7 +12,7 @@
             --bg-color: #000000;
             --text-color: #00ffaa;
             --hover-color: #ffffff; 
-            --border-radius: 0px; 
+            --border-radius: 8px; /* DEFAULT BARU: 8px */
             
             /* Font dan Ukuran */
             --font-family: 'Fira Code', 'DejaVu Sans Mono', monospace;
@@ -30,50 +30,65 @@
         body {
             background-color: var(--bg-color);
             color: var(--text-color);
-            font-family: var(--font-family); /* Menggunakan variabel baru */
-            font-size: calc(var(--font-size-base) * 1em); /* Menggunakan variabel baru */
+            font-family: var(--font-family); 
+            font-size: calc(var(--font-size-base) * 1em); 
             margin: 0;
             padding: 20px;
             min-height: 100vh;
             text-shadow: 0 0 5px rgba(0, 255, 170, 0.3);
             transition: background-color 0.3s, color 0.3s, text-shadow 0.3s;
-            display: flex; /* Aktifkan Flexbox di body */
+            display: flex; 
             justify-content: center;
-            align-items: center; /* PENTING: Untuk centering vertikal main-container */
+            align-items: center; 
+            
+            /* FIX FODC: Sembunyikan body sampai setting dari Cloud dimuat */
+            visibility: hidden; 
+            opacity: 0; 
+            transition: opacity 0.3s ease;
         }
+        
+        /* Pastikan text loading tetap terlihat saat body disembunyikan */
+        #loading-text {
+            visibility: visible !important;
+            opacity: 1 !important; 
+            position: absolute; /* Agar tidak ikut hilang */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1; 
+        }
+
 
         /* CONTAINER UTAMA UNTUK LAYOUT SAMPINGAN */
         .main-container {
             display: flex;
             width: 100%;
-            max-width: 1200px; /* Batasan lebar keseluruhan */
+            max-width: 1200px; 
             margin: 0;
-            align-items: center; /* Diubah untuk centering horizontal konten */
+            align-items: center; 
         }
         
         /* KOLOM KIRI: BANNER/COVER */
         .banner-column {
-            flex: 0 0 350px; /* Lebar tetap 350px untuk banner */
+            flex: 0 0 350px; 
             margin-right: 40px;
-            margin-top: var(--margin-top-banner); /* Menggunakan variabel baru */
+            margin-top: var(--margin-top-banner); 
         }
 
         .banner-column img { 
             width: 100%; 
-            /* Memberi tinggi default agar layout tidak berantakan sebelum image terload */
             height: 500px; 
             display: block; 
             border-radius: var(--border-radius); 
             box-shadow: 0 0 15px var(--text-color); 
             transition: box-shadow 0.3s, border-radius 0.3s; 
-            /* PENTING: object-fit untuk GIF/gambar vertikal */
             object-fit: cover; 
         }
 
         /* KOLOM KANAN: KONTEN (Search, Links, Footer) */
         .content-column {
-            flex-grow: 1; /* Ambil sisa ruang yang ada */
-            margin-top: var(--margin-top-banner); /* Samakan margin atas dengan banner */
+            flex-grow: 1; 
+            margin-top: var(--margin-top-banner); 
         }
         
         a {
@@ -87,14 +102,13 @@
             text-decoration: underline;
         }
 
-        /* FIX: Menambahkan specificity agar link hover di dropdown juga bekerja */
         .category ul li a:hover {
             color: var(--hover-color); 
             text-decoration: underline;
         }
         
         .search-container { 
-            margin-bottom: var(--margin-bottom-search); /* Menggunakan variabel baru */
+            margin-bottom: var(--margin-bottom-search); 
             width: 100%; max-width: 600px; text-align: left; 
         }
         #search-input { 
@@ -111,10 +125,9 @@
             transition: border-color 0.3s, box-shadow 0.3s, border-radius 0.3s; 
         }
         .link-columns { 
-            /* Mengubah dari flex-wrap ke grid untuk layout 2 kolom responsif */
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px 40px; /* Jarak vertikal dan horizontal */
+            gap: 20px 40px; 
             width: 100%; 
             max-width: 800px; 
             margin-bottom: 80px; 
@@ -139,9 +152,7 @@
             list-style: none; 
             padding: 5px 15px; 
             position: absolute; 
-            /* EDIT MANUAL DI SINI: Ubah nilai 50px sesuai keinginanmu */
             left: 50px; 
-            /* Overlap agar celah hilang */
             top: 100%; 
             margin-top: -10px; 
             display: none; 
@@ -157,16 +168,16 @@
         .category:hover h3::before { content: 'v'; }
         
         .category ul li { 
-            margin-bottom: var(--line-spacing); /* Menggunakan variabel baru */
+            margin-bottom: var(--line-spacing); 
             font-size: 0.9em; 
         }
         .category ul li::before { content: '>> '; color: var(--text-color); }
         
         .footer-options { 
             width: 100%; 
-            max-width: 800px; /* Samakan dengan lebar link-columns */
+            max-width: 800px; 
             display: flex; 
-            justify-content: flex-start; /* Sejajarkan ke kiri */
+            justify-content: flex-start; 
             gap: 30px; 
             font-size: 0.9em; 
             text-align: center; 
@@ -237,12 +248,11 @@
         .edit-link-actions button { background-color: var(--text-color); color: var(--bg-color); padding: 3px 8px; margin: 0 2px; font-size: 0.8em; margin-top: 0; }
         
         @media (max-width: 768px) {
-            /* Ubah Flexbox menjadi tumpukan vertikal di layar kecil */
             .main-container { flex-direction: column; align-items: center; }
             .banner-column { 
-                flex: none; /* Nonaktifkan flex */
+                flex: none; 
                 width: 100%; 
-                max-width: 400px; /* Batasi lebar banner di mobile */
+                max-width: 400px; 
                 margin-right: 0; 
                 margin-bottom: 40px; 
             }
@@ -265,7 +275,7 @@
 <div class="main-container">
     
     <div class="banner-column">
-        <img id="main-banner" src="https://picsum.photos/id/431/350/500" alt="Startpage Banner">
+        <img id="main-banner" src="https://64.media.tumblr.com/c6d0a4d29b1a63da9fcd3af74a1de1b7/125d55aa950c016c-9d/s1280x1920/d2d9327af96823f8a990d4e4b2497749c2c08da5.gifv" alt="Startpage Banner">
     </div>
 
     <div class="content-column">
@@ -301,7 +311,7 @@
             <label for="hover-color-input">Warna Teks Saat Hover:</label>
             <input type="color" id="hover-color-input" name="hover-color">
             <label for="radius-input">Radius Sudut (0-20px): <span id="radius-value">8</span>px</label>
-            <input type="range" id="radius-input" name="radius" min="0" max="20" value="0">
+            <input type="range" id="radius-input" name="radius" min="0" max="20" value="8">
             
             <h4 style="margin-top: 30px;">BANNER / COVER SAMPING</h4>
             <label for="banner-url-input">URL Gambar/GIF Cover:</label>
@@ -391,7 +401,6 @@
     };
 
     // Initialize Firebase
-    // Pastikan ini berjalan tanpa error!
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
@@ -399,26 +408,26 @@
     const USER_DATA_ID = "StartpageData"; 
     console.log("Firebase initialized. Connecting to doc: users/StartpageData");
 
-    // --- 2. Konfigurasi Default & Global Scope ---
+    // --- 2. Konfigurasi Default & Global Scope (DIUBAH) ---
 
     const defaultSettings = {
         // WARNA
         '--bg-color': '#000000',
         '--text-color': '#00ffaa',
         '--hover-color': '#ffffff',
-        '--border-radius': '0px',
+        '--border-radius': '8px', // DEFAULT BARU
         // BANNER URL
-        'bannerUrl': 'https://picsum.photos/id/431/350/500', 
+        'bannerUrl': 'https://64.media.tumblr.com/c6d0a4d29b1a63da9fcd3af74a1de1b7/125d55aa950c016c-9d/s1280x1920/d2d9327af96823f8a990d4e4b2497749c2c08da5.gifv', // DEFAULT BARU
         // FONT
         '--font-family': "'Fira Code', 'DejaVu Sans Mono', monospace",
-        '--font-size-base': '1.0', // dalam em
+        '--font-size-base': '1.0', 
         '--line-spacing': '5px',
         // MARGIN
         '--margin-top-banner': '20px',
         '--margin-bottom-search': '50px'
     };
 
-    // Struktur Default Link (Akan digunakan jika Cloud Data kosong)
+    // Struktur Default Link 
     const defaultLinks = [
         { name: "Entertainment", links: [
             { text: "Netflix", url: "https://www.netflix.com/", isCustom: false },
@@ -466,7 +475,7 @@
     const addLinkForm = document.getElementById('add-link-form'); 
     const linkCategorySelect = document.getElementById('link-category'); 
     
-    // --- 4. Fungsi Utama Cloud Sync (DIUBAH) ---
+    // --- 4. Fungsi Utama Cloud Sync ---
 
     /** Mendapatkan link dan settings dari Firestore. */
     async function getCloudData() {
@@ -474,16 +483,15 @@
         let cloudData = {};
         
         try {
-            // Path: koleksi 'users', dokumen ID 'StartpageData' (sesuai rules)
             const docRef = doc(db, "users", USER_DATA_ID);
             const docSnap = await getDoc(docRef);
             
-            if (loadingText) loadingText.remove();
+            // Hapus loading text di sini (sebelum data diambil)
+            // if (loadingText) loadingText.remove(); 
 
             if (docSnap.exists()) {
                 cloudData = docSnap.data();
                 
-                // Gunakan link dari cloud, fallback ke defaultLinks jika kosong
                 cloudData.links = cloudData.links || defaultLinks; 
                 
                 // Gabungkan settings dari cloud dengan defaultSettings agar variabel baru terbaca
@@ -491,7 +499,6 @@
                 
                 return cloudData;
             } else {
-                // Jika data belum ada, simpan link dan settings default
                 console.warn("No data found in Cloud. Saving default links and settings.");
                 await saveLinks(defaultLinks);
                 await saveSettingsToCloud(defaultSettings);
@@ -518,35 +525,29 @@
 
     /** Menyimpan link ke Firestore. */
     async function saveLinks(links) {
-        // Filter kategori yang tidak punya link (supaya bersih)
         const filteredLinks = links.filter(cat => cat.links && cat.links.length > 0);
         
-        // Simpan ke Local Storage sebagai Fallback
         localStorage.setItem('ichi_links', JSON.stringify(filteredLinks));
 
         try {
             const docRef = doc(db, "users", USER_DATA_ID);
-            await setDoc(docRef, { links: filteredLinks }, { merge: true }); // Merge agar setting tidak terhapus
+            await setDoc(docRef, { links: filteredLinks }, { merge: true }); 
             
-            // Re-render tampilan setelah menyimpan
             renderLinksToStartpage(filteredLinks);
             populateCategorySelect(filteredLinks);
 
         } catch (e) {
             console.error("Gagal menyimpan link ke Cloud Firestore:", e);
-            // Tambahkan notifikasi error ke user jika gagal simpan
             console.error('Gagal menyimpan data ke Cloud. Cek Console Log untuk detail.');
         }
     }
     
-    /** Menyimpan pengaturan tampilan ke Firestore (BARU). */
+    /** Menyimpan pengaturan tampilan ke Firestore. */
     async function saveSettingsToCloud(settings) {
-        // Simpan ke Local Storage juga sebagai Fallback dan untuk loading awal
         localStorage.setItem('ichi_settings', JSON.stringify(settings));
 
         try {
             const docRef = doc(db, "users", USER_DATA_ID);
-            // Simpan settings dengan merge: true agar link tidak terhapus
             await setDoc(docRef, { settings: settings }, { merge: true });
             console.log("Settings saved to Cloud Firestore successfully.");
 
@@ -558,14 +559,11 @@
 
     // --- 5. Render & Global Functions ---
 
-    // Fungsi untuk update banner image
     function updateBannerImage(url) {
-        // Cek jika URL adalah string kosong, gunakan placeholder
         if (!url || url.trim() === '') {
             mainBanner.src = defaultSettings.bannerUrl;
         } else {
             mainBanner.src = url;
-            // Ini opsional: atur tinggi agar fleksibel dengan gambar asli
             mainBanner.style.height = 'auto'; 
         }
     }
@@ -574,7 +572,6 @@
     function renderLinksToStartpage(links) {
         let html = '';
         
-        // Reset container
         linkColumnsContainer.innerHTML = '';
 
         links.forEach((category) => {
@@ -595,9 +592,7 @@
         linkColumnsContainer.innerHTML = html;
     }
 
-    // Dipanggil saat Edit Link
     window.renderEditModal = async function() {
-        // Menggunakan getCloudData untuk mendapatkan link
         const allLinks = (await getCloudData()).links; 
         let html = '';
 
@@ -606,7 +601,6 @@
             html += `<h4>${category.name}</h4>`;
             
             category.links.forEach((link, linkIndex) => {
-                // Gunakan escape untuk mencegah error di onclick attribute
                 const categoryEscaped = category.name.replace(/'/g, "\\'");
                 html += `
                     <div class="edit-link-item" data-category="${category.name}" data-index="${linkIndex}" data-custom="${link.isCustom}">
@@ -629,9 +623,7 @@
         editModal.style.display = 'block';
     }
 
-    // Global: Edit Link
     window.editLink = async function(categoryName, linkIndex) {
-        // Menggunakan getCloudData untuk mendapatkan link
         let links = (await getCloudData()).links; 
         const category = links.find(cat => cat.name === categoryName);
         if (!category) return;
@@ -652,11 +644,9 @@
         window.renderEditModal(); 
     }
 
-    // Global: Delete Link
     window.deleteLink = async function(categoryName, linkIndex) {
         if (!confirm('Yakin ingin menghapus link ini? (Perubahan akan disimpan di Cloud)')) return;
         
-        // Menggunakan getCloudData untuk mendapatkan link
         let links = (await getCloudData()).links; 
         const category = links.find(cat => cat.name === categoryName);
         if (!category) return;
@@ -664,7 +654,6 @@
 
         category.links.splice(linkIndex, 1); 
         
-        // Hapus kategori jika kosong
         if (category.links.length === 0) {
             const categoryIndex = links.findIndex(cat => cat.name === categoryName);
             if (categoryIndex !== -1) {
@@ -676,10 +665,9 @@
         window.renderEditModal(); 
     }
 
-    // Fungsi Add Link
     function populateCategorySelect(links) {
         linkCategorySelect.innerHTML = '<option value="">-- Pilih Kategori --</option>'; 
-        const categories = links.map(cat => cat.name).sort(); // Urutkan kategori
+        const categories = links.map(cat => cat.name).sort(); 
         
         categories.forEach(catName => {
             const option = document.createElement('option');
@@ -709,7 +697,6 @@
             return;
         }
 
-        // Menggunakan getCloudData untuk mendapatkan link terbaru dari Cloud
         let links = (await getCloudData()).links; 
         let existingCategory = links.find(cat => cat.name.toLowerCase() === categoryName.toLowerCase());
 
@@ -722,31 +709,25 @@
             links.push(newCategoryObject);
         }
 
-        await saveLinks(links); // Simpan kembali ke Cloud
+        await saveLinks(links); 
 
-        // Reset form dan sembunyikan modal
         addLinkForm.reset();
         document.getElementById('link-url').value = 'https://';
         addModal.style.display = 'none';
         
-        // Panggil renderLinksToStartpage secara eksplisit
         const updatedLinks = (await getCloudData()).links;
         renderLinksToStartpage(updatedLinks);
     });
 
-    // --- 6. Logika Konfigurasi Warna & Banner (DIUBAH) ---
+    // --- 6. Logika Konfigurasi Warna & Banner ---
 
-    // Mengambil nilai range yang valid
     function getRangeValue(inputElement, defaultValue) {
         return inputElement.value ? inputElement.value : defaultValue;
     }
 
-    // Memuat pengaturan dari objek settings (dari Cloud/Local)
     function loadAndApplySettings(settings) {
         
-        // Terapkan semua properti CSS ke root
         for (const [key, value] of Object.entries(settings)) {
-            // Hanya properti CSS yang dimulai dengan '--' yang dimasukkan ke root
             if (key.startsWith('--')) {
                 root.style.setProperty(key, value);
             }
@@ -760,7 +741,7 @@
         // BANNER URL
         const currentBannerUrl = settings['bannerUrl'] || defaultSettings.bannerUrl;
         bannerUrlInput.value = currentBannerUrl;
-        updateBannerImage(currentBannerUrl); // Terapkan URL ke <img>
+        updateBannerImage(currentBannerUrl); 
 
         // Update input range/select dan value span
         
@@ -844,7 +825,6 @@
             '--margin-bottom-search': newMarginBottomSearch,
         };
         
-        // Panggil fungsi baru untuk menyimpan ke Cloud
         await saveSettingsToCloud(newSettings);
 
         configModal.style.display = 'none';
@@ -858,10 +838,8 @@
         
         localStorage.removeItem('ichi_settings');
         
-        // Terapkan dan Simpan Default Settings ke Cloud
         await saveSettingsToCloud(defaultSettings); 
         
-        // Force reload untuk memastikan CSS dan JS membaca default settings
         window.location.reload();
     });
 
@@ -872,7 +850,6 @@
     document.getElementById('add-link-btn').onclick = async function(event) { 
         event.preventDefault(); 
         addModal.style.display = 'block'; 
-        // Menggunakan getCloudData untuk mendapatkan link
         populateCategorySelect((await getCloudData()).links); 
     } 
 
@@ -897,20 +874,27 @@
         }
     });
 
-    // Panggil inisialisasi saat halaman dimuat
+    // Panggil inisialisasi saat halaman dimuat (DIUBAH UNTUK FIX FODC)
     window.onload = async function() {
         // Ambil semua data (link dan settings) dari Cloud
         const cloudData = await getCloudData();
         
-        // PENTING: Load pengaturan harus duluan sebelum render link
+        // 1. Load pengaturan
         loadAndApplySettings(cloudData.settings); 
         
-        // Render Link
+        // 2. Render Link
         renderLinksToStartpage(cloudData.links);
         populateCategorySelect(cloudData.links);
+
+        // 3. Hapus loading text (opsional)
+        const loadingText = document.getElementById('loading-text');
+        if (loadingText) loadingText.remove();
+
+        // 4. Tampilkan body setelah semua setting diterapkan
+        document.body.style.visibility = 'visible'; 
+        document.body.style.opacity = '1';
     };
 </script>
 
 </body>
 </html>
-
