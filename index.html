@@ -6,8 +6,7 @@
     <title>My Ichi Startpage</title>
     <meta name="robots" content="noindex">
     
-    <script src="https://cdn.jsdelivr.net/npm/@tsparticles/engine@2/tsparticles.engine.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tsparticles/basic@2/tsparticles.basic.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.min.js"></script>
     <style>
         /* CSS ALA TERMINAL (Konfigurasi Warna Disesuaikan) */
         :root {
@@ -896,16 +895,12 @@
     // --- 8. Inisialisasi tsParticles (Fungsi Baru) ---
     
     async function initializeParticles(particleColor) {
+        // Karena menggunakan CDN Full, kita bisa langsung akses window.tsParticles.
         const tsParticles = window.tsParticles;
 
         if (!tsParticles) {
             console.error("tsParticles library not loaded.");
             return;
-        }
-
-        // PENTING: Gunakan window.loadBasic (karena kita pakai CDN basic)
-        if (window.loadBasic) {
-             await window.loadBasic(tsParticles); 
         }
 
         // Cek apakah ada instance tsparticles yang sudah berjalan dan hapus
@@ -980,6 +975,8 @@
                 }
             }
         });
+        
+        console.log(`tsParticles initialized with color: ${particleColor}`);
     }
 
     // Panggil inisialisasi saat halaman dimuat
@@ -987,7 +984,7 @@
         // Ambil semua data (link dan settings) dari Cloud
         const cloudData = await getCloudData();
         
-        // 1. Load pengaturan & Inisialisasi Particles (dipanggil di dalam loadAndApplySettings)
+        // 1. Load pengaturan & Inisialisasi Particles 
         loadAndApplySettings(cloudData.settings); 
         
         // 2. Render Link
