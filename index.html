@@ -64,6 +64,7 @@
             width: 100%; 
             height: 500px; 
             display: block; 
+            /* Menggunakan variabel CSS untuk border-radius */
             border-radius: var(--border-radius); 
             box-shadow: 0 0 15px var(--text-color); 
             transition: box-shadow 0.3s, border-radius 0.3s; 
@@ -153,6 +154,7 @@
         .category:hover h3::before { content: 'v'; }
         
         .category ul li { 
+            /* Menggunakan variabel CSS untuk line-spacing */
             margin-bottom: var(--line-spacing); 
             font-size: 0.9em; 
         }
@@ -293,7 +295,7 @@
 
         <div class="link-columns" id="link-columns">
             <!-- Konten link di sini akan digenerate dari JavaScript -->
-            <h3 id="loading-text">Memuat data dari Cloud...</h3>
+            <h3 id="loading-text">Memuat data dan autentikasi Cloud...</h3>
         </div>
 
         <div class="footer-options">
@@ -404,6 +406,9 @@
     // Import modul Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js";
     import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore.js";
+    // Import Auth untuk sign-in anonim
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-auth.js";
+
 
     // --- 1. Konfigurasi Firebase Anda (HARUS SESUAI DENGAN PUNYA KAMU) ---
     // Gunakan konfigurasi global dari Canvas
@@ -412,8 +417,10 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const auth = getAuth(app); // Inisiasi Auth
 
     // Path dokumen untuk menyimpan data startpage (public data)
+    // Menggunakan path Public Data agar semua user di app yang sama berbagi setting
     const USER_DATA_PATH = `artifacts/${appId}/public/data/startpage_config/global`;
     
     // --- 2. Konfigurasi Default & Global Scope ---
@@ -489,6 +496,18 @@
     const marginBottomSearchValueSpan = document.getElementById('margin-bottom-search-value');
     
     // --- 4. Fungsi Utama Cloud Sync ---
+
+    /** Melakukan sign-in anonim untuk akses Cloud (Wajib di Canvas) */
+    async function authenticate() {
+        try {
+            // Coba sign in anonim
+            await signInAnonymously(auth);
+            console.log("Authentication successful (Anonymous).");
+        } catch (e) {
+            console.error("Gagal melakukan otentikasi:", e);
+        }
+    }
+
 
     /** Mendapatkan seluruh data (links dan settings) dari Firestore. */
     async function loadData() {
@@ -598,7 +617,11 @@
             }
         });
 
-        linkColumnsContainer.innerHTML = html;
+        if (html === '') {
+            linkColumnsContainer.innerHTML = '<p style="color:red; margin-top:20px;">Belum ada link yang ditambahkan. Klik [ add new link ] di bawah.</p>';
+        } else {
+            linkColumnsContainer.innerHTML = html;
+        }
     }
 
     // Dipanggil saat Edit Link
@@ -607,29 +630,33 @@
         const allLinks = globalData.links;
         let html = '';
 
-        allLinks.forEach((category) => {
-            html += `<div class="edit-category-group">`;
-            html += `<h4>${category.name}</h4>`;
-            
-            category.links.forEach((link, linkIndex) => {
-                // Hati-hati dengan tanda kutip di nama kategori
-                const categoryEscaped = category.name.replace(/'/g, "\\'");
-                html += `
-                    <div class="edit-link-item" data-category="${category.name}" data-index="${linkIndex}" data-custom="${link.isCustom}">
-                        <div class="edit-link-info">
-                            ${link.text} 
-                            <span>${link.url}</span>
-                            ${link.isCustom ? '<span style="color:red;">(CUSTOM)</span>' : '<span style="opacity:0.5;">(DEFAULT)</span>'}
+        if (allLinks.length === 0) {
+            html = '<p>Belum ada link yang bisa diedit. Tambahkan link baru terlebih dahulu.</p>';
+        } else {
+            allLinks.forEach((category) => {
+                html += `<div class="edit-category-group">`;
+                html += `<h4>${category.name}</h4>`;
+                
+                category.links.forEach((link, linkIndex) => {
+                    // Hati-hati dengan tanda kutip di nama kategori
+                    const categoryEscaped = category.name.replace(/'/g, "\\'");
+                    html += `
+                        <div class="edit-link-item" data-category="${category.name}" data-index="${linkIndex}" data-custom="${link.isCustom}">
+                            <div class="edit-link-info">
+                                ${link.text} 
+                                <span>${link.url}</span>
+                                ${link.isCustom ? '<span style="color:red; opacity: 1;">(CUSTOM)</span>' : '<span style="opacity:0.5;">(DEFAULT)</span>'}
+                            </div>
+                            <div class="edit-link-actions">
+                                <button onclick="editLink('${categoryEscaped}', ${linkIndex})">Edit</button>
+                                <button onclick="deleteLink('${categoryEscaped}', ${linkIndex})">Hapus</button>
+                            </div>
                         </div>
-                        <div class="edit-link-actions">
-                            <button onclick="editLink('${categoryEscaped}', ${linkIndex})">Edit</button>
-                            <button onclick="deleteLink('${categoryEscaped}', ${linkIndex})">Hapus</button>
-                        </div>
-                    </div>
-                `;
+                    `;
+                });
+                html += `</div>`;
             });
-            html += `</div>`;
-        });
+        }
         
         linkListContainer.innerHTML = html;
         editModal.style.display = 'block';
@@ -643,8 +670,7 @@
 
         const link = category.links[linkIndex];
         
-        // Ganti alert/prompt dengan modal kustom jika ini adalah aplikasi di luar Canvas
-        // Menggunakan window.prompt/confirm untuk kesederhanaan di Canvas
+        // Ganti alert/confirm dengan window.prompt untuk UI yang lebih baik
         const newText = window.prompt(`Edit Teks untuk "${link.text}":`, link.text);
         if (newText === null || newText.trim() === "") return; 
 
@@ -655,13 +681,12 @@
         link.url = newUrl.trim();
         link.isCustom = true; 
 
-        await saveLinks([...links]); // Simpan copy array
+        await saveLinks([...links]); 
         window.renderEditModal(); 
     }
 
     // Global: Delete Link
     window.deleteLink = async function(categoryName, linkIndex) {
-        // Ganti alert/prompt dengan modal kustom jika ini adalah aplikasi di luar Canvas
         if (!window.confirm('Yakin ingin menghapus link ini? (Perubahan akan disimpan di Cloud)')) return;
         
         let links = globalData.links;
@@ -717,6 +742,7 @@
         }
 
         let links = globalData.links; 
+        // Cari kategori berdasarkan nama (case-insensitive)
         let existingCategory = links.find(cat => cat.name.toLowerCase() === categoryName.toLowerCase());
 
         const newLink = { text: text, url: url, isCustom: true };
@@ -733,10 +759,10 @@
 
         addLinkForm.reset();
         document.getElementById('link-url').value = 'https://';
+        document.getElementById('new-category-name').value = '';
         addModal.style.display = 'none';
         
-        // Render ulang (sudah dipanggil di saveLinks, tapi jaga-jaga)
-        renderLinksToStartpage(globalData.links);
+        // Render ulang (sudah dipanggil di saveLinks)
     });
 
     // --- 6. Logika Konfigurasi Warna & Banner ---
@@ -822,7 +848,7 @@
         // 1. Terapkan ke DOM
         loadAndApplySettings(newSettings); 
 
-        // 2. Simpan ke Cloud Firestore (Ini yang memastikan persisten)
+        // 2. Simpan ke Cloud Firestore 
         await saveSettings(newSettings);
 
         configModal.style.display = 'none';
@@ -859,6 +885,7 @@
         document.getElementById('add-link-btn').addEventListener('click', function(event) { 
             event.preventDefault(); 
             addModal.style.display = 'block'; 
+            // Pastikan kategori terbaru dimuat sebelum modal dibuka
             populateCategorySelect(globalData.links); 
         }); 
 
@@ -889,19 +916,21 @@
 
     // Panggil inisialisasi saat halaman dimuat
     window.onload = async function() {
-        // 1. Muat semua data (links dan settings) dari Cloud
+        // 1. Otentikasi Cloud (Wajib!)
+        await authenticate();
+
+        // 2. Muat semua data (links dan settings) dari Cloud
         await loadData(); 
         
-        // 2. Terapkan settings ke tampilan (CSS)
+        // 3. Terapkan settings ke tampilan (CSS)
         loadAndApplySettings(globalData.settings); 
 
-        // 3. Render links
+        // 4. Render links
         renderLinksToStartpage(globalData.links);
         
-        // 4. Inisialisasi event listeners untuk tombol-tombol
+        // 5. Inisialisasi event listeners untuk tombol-tombol
         initializeEventListeners();
     };
 </script>
-
 </body>
 </html>
