@@ -295,7 +295,7 @@
 
         <div class="link-columns" id="link-columns">
             <!-- Konten link di sini akan digenerate dari JavaScript -->
-            <h3 id="loading-text">Memuat data dan autentikasi Cloud...</h3>
+            <h3 id="loading-text">Memuat data dan menghubungkan ke Cloud...</h3>
         </div>
 
         <div class="footer-options">
@@ -367,7 +367,7 @@
     <div class="modal-content">
         <span class="close-btn edit-close-btn">×</span>
         <h3>[ Edit Link ]</h3>
-        <p>Semua link disimpan di Firebase Cloud.</p>
+        <p>Semua link disimpan di Firebase Cloud. Perubahan akan langsung terlihat.</p>
         <div id="link-list-container"></div>
         <button class="edit-close-btn">Selesai</button>
     </div>
@@ -405,45 +405,44 @@
 <script type="module">
     // Import modul Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js";
-    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore.js";
+    // onSnapshot untuk real-time update
+    import { getFirestore, doc, setDoc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore.js";
     // Import Auth untuk sign-in anonim
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-auth.js";
+    import { setLogLevel } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore.js";
 
 
+    // Aktifkan logging Debug di Firestore
+    setLogLevel('Debug');
+    
     // --- 1. Konfigurasi Firebase Anda (HARUS SESUAI DENGAN PUNYA KAMU) ---
-    // Gunakan konfigurasi global dari Canvas
     const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app); // Inisiasi Auth
+    let app;
+    let db;
+    let auth;
+    let authInitialized = false; // Status otentikasi
+    let userDataRef; // Referensi dokumen Firestore
 
     // Path dokumen untuk menyimpan data startpage (public data)
-    // Menggunakan path Public Data agar semua user di app yang sama berbagi setting
     const USER_DATA_PATH = `artifacts/${appId}/public/data/startpage_config/global`;
     
     // --- 2. Konfigurasi Default & Global Scope ---
 
-    // Gunakan camelCase untuk kunci settings, agar mudah disimpan/ambil dari JSON
     const defaultSettings = {
-        // WARNA
         bgColor: '#000000',
         textColor: '#00ffaa',
         hoverColor: '#ffffff',
         borderRadius: '0px',
-        // BANNER URL
         bannerUrl: 'https://picsum.photos/id/431/350/500', 
-        // FONT
         fontFamily: "'Fira Code', 'DejaVu Sans Mono', monospace",
-        fontSizeBase: '1.0', // dalam em
+        fontSizeBase: '1.0', 
         lineSpacing: '5px',
-        // MARGIN
         marginTopBanner: '20px',
         marginBottomSearch: '50px'
     };
 
-    // Struktur Default Link (Akan digunakan jika Cloud Data kosong)
     const defaultLinks = [
         { name: "Entertainment", links: [
             { text: "Netflix", url: "https://www.netflix.com/", isCustom: false },
@@ -469,7 +468,6 @@
         settings: defaultSettings
     };
 
-
     // --- 3. Elemen DOM ---
     const root = document.documentElement;
     const configModal = document.getElementById('config-modal');
@@ -481,7 +479,8 @@
     const linkListContainer = document.getElementById('link-list-container');
     const addLinkForm = document.getElementById('add-link-form'); 
     const linkCategorySelect = document.getElementById('link-category'); 
-    
+    const loadingText = document.getElementById('loading-text');
+
     // Config form elements
     const bannerUrlInput = document.getElementById('banner-url-input'); 
     const radiusInput = document.getElementById('radius-input');
@@ -495,96 +494,105 @@
     const marginBottomSearchInput = document.getElementById('margin-bottom-search-input');
     const marginBottomSearchValueSpan = document.getElementById('margin-bottom-search-value');
     
-    // --- 4. Fungsi Utama Cloud Sync ---
+    // --- 4. Inisialisasi Firebase & Real-time Listener ---
 
-    /** Melakukan sign-in anonim untuk akses Cloud (Wajib di Canvas) */
-    async function authenticate() {
+    /** Melakukan inisialisasi Firebase dan sign-in anonim */
+    async function initializeFirebase() {
         try {
-            // Coba sign in anonim
+            // Inisialisasi App, Firestore, dan Auth
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            userDataRef = doc(db, USER_DATA_PATH);
+
+            // Coba sign in anonim (Wajib untuk Cloud Firestore di Canvas)
             await signInAnonymously(auth);
-            console.log("Authentication successful (Anonymous).");
-        } catch (e) {
-            console.error("Gagal melakukan otentikasi:", e);
-        }
-    }
+            authInitialized = true;
+            console.log("Firebase initialized and authenticated (Anonymous).");
 
-
-    /** Mendapatkan seluruh data (links dan settings) dari Firestore. */
-    async function loadData() {
-        const loadingText = document.getElementById('loading-text');
-        
-        try {
-            const docRef = doc(db, USER_DATA_PATH);
-            const docSnap = await getDoc(docRef);
-            
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                
-                // Pastikan links adalah array, jika null/undefined, gunakan defaultLinks
-                const loadedLinks = Array.isArray(data.links) ? data.links : defaultLinks;
-                
-                // Gabungkan settings yang tersimpan dengan default settings (untuk properti baru)
-                const loadedSettings = Object.assign({}, defaultSettings, data.settings);
-                
-                globalData.links = loadedLinks;
-                globalData.settings = loadedSettings;
-
-            } else {
-                console.warn("No data found in Cloud. Saving default data.");
-                // Jika tidak ada data sama sekali, simpan data default
-                await setDoc(docRef, globalData);
-            }
-            
-            // Hapus loading text setelah selesai memuat data
-            if (loadingText && loadingText.parentNode) {
-                 loadingText.remove();
-            } 
+            // Setelah otentikasi, mulai listener data real-time
+            setupRealtimeListener();
 
         } catch (e) {
-            console.error("Gagal mengambil data dari Cloud Firestore:", e);
+            console.error("Gagal inisialisasi Firebase atau otentikasi:", e);
             if (loadingText) {
                 loadingText.textContent = "Koneksi Cloud Gagal. Menggunakan data default.";
                 loadingText.style.color = "red";
             }
-            // Jika GAGAL, tetap gunakan globalData yang berisi nilai default
+            // Jika gagal, tetap gunakan data default
+            loadAndApplySettings(defaultSettings);
+            renderLinksToStartpage(defaultLinks);
+            initializeEventListeners();
         }
-        return globalData;
     }
 
-    /** Menyimpan hanya properti links ke Firestore. */
-    async function saveLinks(links) {
-        // Filter kategori yang tidak punya link (supaya bersih)
-        const filteredLinks = links.filter(cat => cat.links && cat.links.length > 0);
-        
-        try {
-            const docRef = doc(db, USER_DATA_PATH);
-            // Simpan hanya links, dan merge agar settings tidak terhapus
-            await setDoc(docRef, { links: filteredLinks }, { merge: true }); 
+    /** Menyiapkan onSnapshot untuk memantau perubahan data */
+    function setupRealtimeListener() {
+        if (!authInitialized) {
+            console.error("Auth belum siap untuk Real-time Listener.");
+            return;
+        }
+
+        onSnapshot(userDataRef, async (docSnap) => {
+            const loadingText = document.getElementById('loading-text');
+            if (loadingText && loadingText.parentNode) {
+                 loadingText.remove();
+            } 
+
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                
+                // Update Global Data dengan data terbaru dari Cloud
+                globalData.links = Array.isArray(data.links) ? data.links : defaultLinks;
+                globalData.settings = Object.assign({}, defaultSettings, data.settings);
+                
+                // Terapkan perubahan ke UI
+                loadAndApplySettings(globalData.settings);
+                renderLinksToStartpage(globalData.links);
+                
+                console.log("Data diperbarui dari Cloud Firestore secara real-time.");
+            } else {
+                console.warn("Dokumen tidak ditemukan di Cloud. Menyimpan data default.");
+                // Jika dokumen hilang/baru, buat ulang dengan data default
+                // Penting: Pastikan kita tidak membuat loop tak terbatas. Gunakan try/catch
+                try {
+                    await setDoc(userDataRef, globalData);
+                    console.log("Data default telah disimpan.");
+                } catch (e) {
+                    console.error("Gagal menyimpan data default:", e);
+                }
+            }
             
-            globalData.links = filteredLinks;
+            // Render ulang Edit Modal jika sedang terbuka
+            if (editModal.style.display === 'block') {
+                 window.renderEditModal(); 
+            }
+            // Update kategori di Add Modal
+            populateCategorySelect(globalData.links); 
+            
+        }, (error) => {
+            console.error("Error dalam onSnapshot (Real-time update):", error);
+            if (loadingText) {
+                loadingText.textContent = "Error koneksi Cloud. Menggunakan data default lokal.";
+                loadingText.style.color = "red";
+            }
+        });
+    }
 
-            renderLinksToStartpage(filteredLinks);
-            populateCategorySelect(filteredLinks);
-
+    /** Menyimpan seluruh data (links dan settings) ke Firestore. */
+    async function saveData(dataToSave) {
+        if (!authInitialized) {
+            console.error("Otentikasi belum siap, tidak bisa menyimpan.");
+            return;
+        }
+        try {
+            await setDoc(userDataRef, dataToSave);
+            console.log("Data berhasil disimpan ke Cloud.");
         } catch (e) {
-            console.error("Gagal menyimpan link ke Cloud Firestore:", e);
+            console.error("Gagal menyimpan data ke Cloud Firestore:", e);
         }
     }
     
-    /** Menyimpan hanya properti settings ke Firestore. */
-    async function saveSettings(settings) {
-        try {
-            const docRef = doc(db, USER_DATA_PATH);
-            // Simpan hanya settings, dan merge agar links tidak terhapus
-            await setDoc(docRef, { settings: settings }, { merge: true }); 
-            globalData.settings = settings;
-
-        } catch (e) {
-            console.error("Gagal menyimpan setting ke Cloud Firestore:", e);
-        }
-    }
-
-
     // --- 5. Render & Global Functions ---
 
     // Fungsi untuk update banner image
@@ -593,7 +601,12 @@
             mainBanner.src = defaultSettings.bannerUrl;
         } else {
             mainBanner.src = url;
-            mainBanner.style.height = '500px'; // Set kembali ke tinggi fix
+            mainBanner.onerror = () => {
+                // Fallback jika URL banner gagal dimuat
+                mainBanner.src = defaultSettings.bannerUrl;
+                console.error("Gagal memuat URL banner, menggunakan default.");
+            };
+            mainBanner.style.height = '500px'; 
         }
     }
 
@@ -602,7 +615,10 @@
         let html = '';
         linkColumnsContainer.innerHTML = '';
 
-        links.forEach((category) => {
+        // Pastikan links adalah array, jika tidak, pakai array kosong
+        const safeLinks = Array.isArray(links) ? links : [];
+        
+        safeLinks.forEach((category) => {
             if (category.links && category.links.length > 0) {
                 html += `
                     <div class="category">
@@ -625,8 +641,7 @@
     }
 
     // Dipanggil saat Edit Link
-    window.renderEditModal = async function() {
-        // Ambil dari globalData yang sudah dimuat
+    window.renderEditModal = function() {
         const allLinks = globalData.links;
         let html = '';
 
@@ -659,37 +674,42 @@
         }
         
         linkListContainer.innerHTML = html;
-        editModal.style.display = 'block';
+        // Hanya tampilkan jika fungsi ini dipanggil untuk dibuka (bukan hanya dirender ulang)
+        if (editModal.style.display !== 'block') {
+             editModal.style.display = 'block';
+        }
     }
 
     // Global: Edit Link
     window.editLink = async function(categoryName, linkIndex) {
-        let links = globalData.links;
+        let links = JSON.parse(JSON.stringify(globalData.links)); // Clone untuk edit
         const category = links.find(cat => cat.name === categoryName);
         if (!category) return;
 
         const link = category.links[linkIndex];
         
-        // Ganti alert/confirm dengan window.prompt untuk UI yang lebih baik
         const newText = window.prompt(`Edit Teks untuk "${link.text}":`, link.text);
         if (newText === null || newText.trim() === "") return; 
 
         const newUrl = window.prompt(`Edit URL untuk "${newText}":`, link.url);
         if (newUrl === null || newUrl.trim() === "") return; 
         
+        // Update data lokal
         link.text = newText.trim();
         link.url = newUrl.trim();
         link.isCustom = true; 
 
-        await saveLinks([...links]); 
-        window.renderEditModal(); 
+        // Simpan seluruh data (links dan settings)
+        await saveData({ ...globalData, links: links }); 
+        
+        // UI akan terupdate otomatis via onSnapshot
     }
 
     // Global: Delete Link
     window.deleteLink = async function(categoryName, linkIndex) {
         if (!window.confirm('Yakin ingin menghapus link ini? (Perubahan akan disimpan di Cloud)')) return;
         
-        let links = globalData.links;
+        let links = JSON.parse(JSON.stringify(globalData.links)); // Clone
         const category = links.find(cat => cat.name === categoryName);
         if (!category) return;
 
@@ -703,14 +723,15 @@
             }
         }
 
-        await saveLinks([...links]); 
-        window.renderEditModal(); 
+        // Simpan seluruh data (links dan settings)
+        await saveData({ ...globalData, links: links }); 
+        
+        // UI akan terupdate otomatis via onSnapshot
     }
 
     // Fungsi Add Link
     function populateCategorySelect(links) {
         linkCategorySelect.innerHTML = '<option value="">-- Pilih Kategori --</option>'; 
-        // Pastikan links adalah array sebelum memproses
         const categories = (Array.isArray(links) ? links : []).map(cat => cat.name).sort(); 
         
         categories.forEach(catName => {
@@ -730,6 +751,7 @@
         const newCategory = document.getElementById('new-category-name').value.trim();
         
         if (!text || !url) {
+            // Ganti alert dengan console error
             console.error('Teks Link dan URL tidak boleh kosong.');
             return;
         }
@@ -740,8 +762,9 @@
             console.error('Pilih Kategori atau isi Kategori Baru.');
             return;
         }
+        
+        let links = JSON.parse(JSON.stringify(globalData.links)); // Clone
 
-        let links = globalData.links; 
         // Cari kategori berdasarkan nama (case-insensitive)
         let existingCategory = links.find(cat => cat.name.toLowerCase() === categoryName.toLowerCase());
 
@@ -754,28 +777,27 @@
             const newCategoryObject = { name: categoryName, links: [newLink] };
             links.push(newCategoryObject);
         }
-
-        await saveLinks([...links]); // Simpan ke Cloud
+        
+        // Simpan seluruh data (links dan settings)
+        await saveData({ ...globalData, links: links }); 
 
         addLinkForm.reset();
         document.getElementById('link-url').value = 'https://';
         document.getElementById('new-category-name').value = '';
         addModal.style.display = 'none';
         
-        // Render ulang (sudah dipanggil di saveLinks)
+        // UI akan terupdate otomatis via onSnapshot
     });
 
     // --- 6. Logika Konfigurasi Warna & Banner ---
 
     function loadAndApplySettings(settings) {
-        // Ambil settings dari globalData jika tidak diberikan
-        const currentSettings = settings || globalData.settings;
+        const currentSettings = settings;
         
         // Terapkan semua properti CSS ke root
         root.style.setProperty('--bg-color', currentSettings.bgColor);
         root.style.setProperty('--text-color', currentSettings.textColor);
         root.style.setProperty('--hover-color', currentSettings.hoverColor);
-        // Pastikan ada unit 'px'
         root.style.setProperty('--border-radius', currentSettings.borderRadius.endsWith('px') ? currentSettings.borderRadius : currentSettings.borderRadius + 'px');
         root.style.setProperty('--font-family', currentSettings.fontFamily);
         root.style.setProperty('--font-size-base', currentSettings.fontSizeBase.endsWith('em') ? currentSettings.fontSizeBase : currentSettings.fontSizeBase + 'em');
@@ -786,7 +808,7 @@
         // Terapkan Banner
         updateBannerImage(currentSettings.bannerUrl); 
 
-        // Update input field values in config modal (Ini yang memastikan modal menunjukkan nilai yang sedang aktif)
+        // Update input field values in config modal
         document.getElementById('bg-color-input').value = currentSettings.bgColor;
         document.getElementById('text-color-input').value = currentSettings.textColor;
         document.getElementById('hover-color-input').value = currentSettings.hoverColor;
@@ -835,7 +857,6 @@
             bgColor: document.getElementById('bg-color-input').value, 
             textColor: document.getElementById('text-color-input').value, 
             hoverColor: document.getElementById('hover-color-input').value, 
-            // Simpan sebagai string dengan unit agar konsisten saat dimuat ulang
             borderRadius: radiusInput.value + 'px', 
             bannerUrl: bannerUrlInput.value.trim(), 
             fontFamily: document.getElementById('font-family-select').value,
@@ -845,40 +866,37 @@
             marginBottomSearch: marginBottomSearchInput.value + 'px',
         };
 
-        // 1. Terapkan ke DOM
-        loadAndApplySettings(newSettings); 
-
-        // 2. Simpan ke Cloud Firestore 
-        await saveSettings(newSettings);
+        // Simpan seluruh data (settings dan links)
+        await saveData({ ...globalData, settings: newSettings });
 
         configModal.style.display = 'none';
         
-        console.log("Pengaturan disimpan ke Cloud dan diterapkan.");
+        // UI akan terupdate otomatis via onSnapshot
     });
 
     document.getElementById('reset-btn').addEventListener('click', async function() {
+        if (!window.confirm('Yakin ingin mereset semua pengaturan tampilan ke default?')) return;
         
-        // 1. Simpan default settings ke Cloud
-        await saveSettings(defaultSettings); 
+        // Simpan seluruh data, tapi gunakan defaultSettings
+        await saveData({ ...globalData, settings: defaultSettings });
         
-        // 2. Terapkan default ke DOM
-        loadAndApplySettings(defaultSettings);
-        
-        console.log("Pengaturan dikembalikan ke default dan disimpan ke Cloud.");
+        // UI akan terupdate otomatis via onSnapshot
     });
 
     // --- 7. Logika Modal & Inisialisasi ---
     
     // Fungsi untuk inisialisasi semua event listener untuk tombol footer dan modal
     function initializeEventListeners() {
-        // Event Listener untuk Tombol Footer
         document.getElementById('config-btn').addEventListener('click', function(event) { 
             event.preventDefault(); 
+            // Pastikan modal menunjukkan nilai yang sedang aktif saat dibuka
+            loadAndApplySettings(globalData.settings); 
             configModal.style.display = 'block'; 
         });
         
         document.getElementById('edit-link-btn').addEventListener('click', function(event) { 
             event.preventDefault(); 
+            // Panggil fungsi render yang juga akan menampilkan modal
             window.renderEditModal(); 
         });
         
@@ -890,9 +908,11 @@
         }); 
 
         // Event Listener untuk tombol Close (X dan Selesai)
-        document.querySelectorAll('.config-close-btn').forEach(btn => btn.onclick = function() { configModal.style.display = 'none'; });
-        document.querySelectorAll('.edit-close-btn').forEach(btn => btn.onclick = function() { editModal.style.display = 'none'; });
-        document.querySelectorAll('.add-close-btn').forEach(btn => btn.onclick = function() { addModal.style.display = 'none'; });
+        document.querySelectorAll('.close-btn').forEach(btn => btn.onclick = function() { 
+            configModal.style.display = 'none'; 
+            editModal.style.display = 'none'; 
+            addModal.style.display = 'none'; 
+        });
 
         // Event Listener untuk klik di luar modal (Menutup modal)
         window.onclick = function(event) {
@@ -916,19 +936,10 @@
 
     // Panggil inisialisasi saat halaman dimuat
     window.onload = async function() {
-        // 1. Otentikasi Cloud (Wajib!)
-        await authenticate();
-
-        // 2. Muat semua data (links dan settings) dari Cloud
-        await loadData(); 
+        // 1. Inisialisasi Firebase (termasuk Auth dan Listener)
+        await initializeFirebase();
         
-        // 3. Terapkan settings ke tampilan (CSS)
-        loadAndApplySettings(globalData.settings); 
-
-        // 4. Render links
-        renderLinksToStartpage(globalData.links);
-        
-        // 5. Inisialisasi event listeners untuk tombol-tombol
+        // 2. Inisialisasi event listeners (hanya perlu sekali)
         initializeEventListeners();
     };
 </script>
