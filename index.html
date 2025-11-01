@@ -14,6 +14,7 @@
             --bg-color: #000000;
             --text-color: #00ffaa;
             --hover-color: #ffffff; 
+            --particle-color: #00ffaa; /* NEW: Warna Partikel */
             --border-radius: 8px; /* DEFAULT BARU: 8px */
             
             /* Font dan Ukuran */
@@ -47,22 +48,20 @@
             opacity: 0; 
             transition: opacity 0.3s ease;
             position: relative; 
-            z-index: 1; /* Pastikan body/main-container di atas partikel */
+            z-index: 1; 
         }
         
-        /* 1. CONTAINER tsparticles (Background) */
-        /* ID ini tetap kita pakai, tapi di-render oleh particles.js */
+        /* 1. CONTAINER Particles.js (Background) */
         #tsparticles { 
             position: fixed; 
             width: 100%;
             height: 100%;
             top: 0;
             left: 0;
-            z-index: -1; /* Pindahkan ke paling belakang */
-            background-color: var(--bg-color); /* Beri warna dasar BG */
+            z-index: -1; 
+            background-color: var(--bg-color); 
         }
         
-        /* Pastikan text loading tetap terlihat saat body disembunyikan */
         #loading-text {
             visibility: visible !important;
             opacity: 1 !important; 
@@ -132,7 +131,7 @@
         #search-input { 
             width: 90%; 
             padding: 10px; 
-            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparan agar partikel terlihat */
+            background-color: rgba(0, 0, 0, 0.5); 
             color: var(--text-color); 
             border: 2px solid var(--text-color); 
             font-family: var(--font-family); 
@@ -176,9 +175,13 @@
             display: none; 
             min-width: 150px; 
             z-index: 10;
-            background-color: rgba(0, 0, 0, 0.95); 
+            /* UBAH KE TRANSPARAN IOS STYLE */
+            background-color: rgba(0, 0, 0, 0); /* Sangat transparan */
+            backdrop-filter: blur(5px); /* Efek Frosted Glass (Tidak semua browser support, tapi ini cara modernnya) */
+            -webkit-backdrop-filter: blur(5px); /* Dukungan Webkit */
+            
             border: 1px solid var(--text-color); 
-            box-shadow: 0 0 10px rgba(0, 255, 170, 0.5); 
+            box-shadow: 0 0 15px rgba(0, 255, 170, 0.3); /* Shadow lebih lembut */
             border-radius: var(--border-radius);
         }
         
@@ -329,6 +332,10 @@
             <input type="color" id="bg-color-input" name="bg-color">
             <label for="text-color-input">Warna Teks & Glow:</label>
             <input type="color" id="text-color-input" name="text-color">
+            
+            <label for="particle-color-input">Warna Partikel (Latar Belakang):</label>
+            <input type="color" id="particle-color-input" name="particle-color">
+            
             <label for="hover-color-input">Warna Teks Saat Hover:</label>
             <input type="color" id="hover-color-input" name="hover-color">
             <label for="radius-input">Radius Sudut (0-20px): <span id="radius-value">8</span>px</label>
@@ -434,6 +441,7 @@
         '--bg-color': '#000000',
         '--text-color': '#00ffaa',
         '--hover-color': '#ffffff',
+        '--particle-color': '#00ffaa', // NEW DEFAULT PARTICLE COLOR
         '--border-radius': '8px', 
         // BANNER URL
         'bannerUrl': 'https://64.media.tumblr.com/c6d0a4d29b1a63da9fcd3af74a1de1b7/125d55aa950c016c-9d/s1280x1920/d2d9327af96823f8a990d4e4b2497749c2c08da5.gifv', 
@@ -488,6 +496,8 @@
     const marginTopBannerValueSpan = document.getElementById('margin-top-banner-value');
     const marginBottomSearchInput = document.getElementById('margin-bottom-search-input');
     const marginBottomSearchValueSpan = document.getElementById('margin-bottom-search-value');
+
+    const particleColorInput = document.getElementById('particle-color-input'); // NEW INPUT
     
     const linkColumnsContainer = document.getElementById('link-columns');
     const linkListContainer = document.getElementById('link-list-container');
@@ -753,6 +763,7 @@
         document.getElementById('bg-color-input').value = settings['--bg-color'] || defaultSettings['--bg-color'];
         document.getElementById('text-color-input').value = settings['--text-color'] || defaultSettings['--text-color'];
         document.getElementById('hover-color-input').value = settings['--hover-color'] || defaultSettings['--hover-color'];
+        document.getElementById('particle-color-input').value = settings['--particle-color'] || defaultSettings['--particle-color']; // NEW PARTICLE COLOR
         
         // BANNER URL
         const currentBannerUrl = settings['bannerUrl'] || defaultSettings.bannerUrl;
@@ -790,7 +801,7 @@
         marginBottomSearchValueSpan.textContent = currentMarginBottomSearch;
 
         // PENTING: Panggil initializeParticles dengan warna custom
-        initializeParticles(settings['--text-color']);
+        initializeParticles(settings['--particle-color']);
     }
 
     // Event listener untuk update span saat range diubah
@@ -806,6 +817,7 @@
         // Ambil semua nilai dari form
         const newBgColor = document.getElementById('bg-color-input').value;
         const newTextColor = document.getElementById('text-color-input').value;
+        const newParticleColor = document.getElementById('particle-color-input').value; // NEW
         const newHoverColor = document.getElementById('hover-color-input').value;
         const newRadius = getRangeValue(radiusInput, 0) + 'px';
         const newFontFamily = document.getElementById('font-family-select').value;
@@ -819,6 +831,7 @@
         // Terapkan ke Root Style
         root.style.setProperty('--bg-color', newBgColor);
         root.style.setProperty('--text-color', newTextColor);
+        root.style.setProperty('--particle-color', newParticleColor); // NEW
         root.style.setProperty('--hover-color', newHoverColor);
         root.style.setProperty('--border-radius', newRadius);
         root.style.setProperty('--font-family', newFontFamily);
@@ -835,6 +848,7 @@
             '--bg-color': newBgColor, 
             '--text-color': newTextColor, 
             '--hover-color': newHoverColor, 
+            '--particle-color': newParticleColor, // NEW
             '--border-radius': newRadius,
             'bannerUrl': newBannerUrl, 
             '--font-family': newFontFamily,
@@ -901,15 +915,14 @@
             return;
         }
 
-        // Memanggil particlesJS dengan ID container 'tsparticles'
         particlesJS('tsparticles', { 
             "particles": {
                 "number": {
-                    "value": 80, // Jumlah partikel
+                    "value": 80, 
                     "density": { "enable": true, "value_area": 800 }
                 },
                 "color": {
-                    "value": particleColor // Warna Partikel dari Setting
+                    "value": particleColor // Menggunakan Warna Partikel Khusus
                 },
                 "shape": {
                     "type": "circle",
@@ -924,10 +937,10 @@
                     "random": true,
                     "anim": { "enable": false }
                 },
-                "line_linked": { // particles.js pakai line_linked untuk koneksi antar partikel
+                "line_linked": { 
                     "enable": true,
                     "distance": 150,
-                    "color": particleColor, // Warna Link dari Setting
+                    "color": particleColor, // Menggunakan Warna Partikel Khusus untuk link
                     "opacity": 0.4,
                     "width": 1
                 },
@@ -965,7 +978,7 @@
         // Ambil semua data (link dan settings) dari Cloud
         const cloudData = await getCloudData();
         
-        // 1. Load pengaturan & Inisialisasi Particles (dipanggil di dalam loadAndApplySettings)
+        // 1. Load pengaturan & Inisialisasi Particles
         loadAndApplySettings(cloudData.settings); 
         
         // 2. Render Link
