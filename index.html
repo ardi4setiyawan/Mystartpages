@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Ichi Startpage</title>
     <meta name="robots" content="noindex">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@tsparticles/engine@2/tsparticles.engine.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tsparticles/basic@2/tsparticles.basic.min.js"></script>
     <style>
         /* CSS ALA TERMINAL (Konfigurasi Warna Disesuaikan) */
         :root {
@@ -28,7 +31,7 @@
         }
 
         body {
-            background-color: var(--bg-color);
+            /* background-color: var(--bg-color); <-- DIHAPUS, dipindahkan ke #tsparticles */
             color: var(--text-color);
             font-family: var(--font-family); 
             font-size: calc(var(--font-size-base) * 1em); 
@@ -36,7 +39,7 @@
             padding: 20px;
             min-height: 100vh;
             text-shadow: 0 0 5px rgba(0, 255, 170, 0.3);
-            transition: background-color 0.3s, color 0.3s, text-shadow 0.3s;
+            transition: color 0.3s, text-shadow 0.3s;
             display: flex; 
             justify-content: center;
             align-items: center; 
@@ -45,6 +48,18 @@
             visibility: hidden; 
             opacity: 0; 
             transition: opacity 0.3s ease;
+            position: relative; /* Penting untuk z-index */
+        }
+        
+        /* 1. CONTAINER tsparticles (Background) - DITAMBAHKAN */
+        #tsparticles {
+            position: fixed; /* Jadikan fixed background */
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1; /* Pindahkan ke paling belakang */
+            background-color: var(--bg-color); /* Beri warna dasar BG */
         }
         
         /* Pastikan text loading tetap terlihat saat body disembunyikan */
@@ -55,7 +70,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            z-index: 1; 
+            z-index: 10; /* Di atas tsParticles */ 
         }
 
 
@@ -66,6 +81,10 @@
             max-width: 1200px; 
             margin: 0;
             align-items: center; 
+            
+            /* DITAMBAHKAN untuk tampil di atas particles */
+            position: relative; 
+            z-index: 10; 
         }
         
         /* KOLOM KIRI: BANNER/COVER */
@@ -114,7 +133,8 @@
         #search-input { 
             width: 90%; 
             padding: 10px; 
-            background: var(--bg-color); 
+            /* background: var(--bg-color); <-- DIGANTI */
+            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparan agar partikel terlihat */
             color: var(--text-color); 
             border: 2px solid var(--text-color); 
             font-family: var(--font-family); 
@@ -185,8 +205,8 @@
             margin-top: 40px;
         }
 
-        /* MODALS (Tidak Berubah) */
-        .modal { display: none; position: fixed; z-index: 20; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0, 0, 0, 0.8); }
+        /* MODALS (Dibuat z-index lebih tinggi dari main-container) */
+        .modal { display: none; position: fixed; z-index: 200; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0, 0, 0, 0.8); }
         .modal-content {
             background-color: var(--bg-color);
             color: var(--text-color);
@@ -273,6 +293,8 @@
 </head>
 <body>
     
+<div id="tsparticles"></div>
+
 <div class="main-container">
     
     <div class="banner-column">
@@ -390,8 +412,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js";
     import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore.js";
 
-    // --- 1. Konfigurasi Firebase Anda (HARUS SESUAI DENGAN PUNYA KAMU) ---
-    // Konfigurasi ini diambil dari tangkapan layar Firebase yang kamu kirim sebelumnya.
+    // --- 1. Konfigurasi Firebase Anda ---
     const firebaseConfig = {
       apiKey: "AIzaSyDVYsxICgwsOFViMm162rIr4D29fZim3jo",
       authDomain: "startpages-64b35.firebaseapp.com",
@@ -405,20 +426,19 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // ID Unik Data: HARUS SAMA DENGAN NAMA DOKUMEN DI SECURITY RULES FIREBASE
     const USER_DATA_ID = "StartpageData"; 
     console.log("Firebase initialized. Connecting to doc: users/StartpageData");
 
-    // --- 2. Konfigurasi Default & Global Scope (DIUBAH) ---
+    // --- 2. Konfigurasi Default & Global Scope ---
 
     const defaultSettings = {
         // WARNA
         '--bg-color': '#000000',
         '--text-color': '#00ffaa',
         '--hover-color': '#ffffff',
-        '--border-radius': '8px', // DEFAULT BARU
+        '--border-radius': '8px', 
         // BANNER URL
-        'bannerUrl': 'https://64.media.tumblr.com/c6d0a4d29b1a63da9fcd3af74a1de1b7/125d55aa950c016c-9d/s1280x1920/d2d9327af96823f8a990d4e4b2497749c2c08da5.gifv', // DEFAULT BARU
+        'bannerUrl': 'https://64.media.tumblr.com/c6d0a4d29b1a63da9fcd3af74a1de1b7/125d55aa950c016c-9d/s1280x1920/d2d9327af96823f8a990d4e4b2497749c2c08da5.gifv', 
         // FONT
         '--font-family': "'Fira Code', 'DejaVu Sans Mono', monospace",
         '--font-size-base': '1.0', 
@@ -449,7 +469,7 @@
         ]}
     ];
 
-    // --- 3. Elemen DOM (Hanya yang perlu diakses) ---
+    // --- 3. Elemen DOM ---
 
     const root = document.documentElement;
     const configModal = document.getElementById('config-modal');
@@ -487,9 +507,6 @@
             const docRef = doc(db, "users", USER_DATA_ID);
             const docSnap = await getDoc(docRef);
             
-            // Hapus loading text di sini (sebelum data diambil)
-            // if (loadingText) loadingText.remove(); 
-
             if (docSnap.exists()) {
                 cloudData = docSnap.data();
                 
@@ -773,6 +790,9 @@
         const currentMarginBottomSearch = parseInt(settings['--margin-bottom-search']) || 50;
         marginBottomSearchInput.value = currentMarginBottomSearch;
         marginBottomSearchValueSpan.textContent = currentMarginBottomSearch;
+
+        // PENTING: Panggil tsParticles di sini setelah mendapatkan warna custom
+        initializeParticles(settings['--text-color']);
     }
 
     // Event listener untuk update span saat range diubah
@@ -844,7 +864,7 @@
         window.location.reload();
     });
 
-    // --- 7. Logika Modal & Inisialisasi (DIUBAH) ---
+    // --- 7. Logika Modal & Inisialisasi ---
 
     document.getElementById('config-btn').onclick = function(event) { event.preventDefault(); configModal.style.display = 'block'; }
     document.getElementById('edit-link-btn').onclick = function(event) { event.preventDefault(); window.renderEditModal(); }
@@ -875,19 +895,110 @@
         }
     });
 
-    // Panggil inisialisasi saat halaman dimuat (DIUBAH UNTUK FIX FODC)
+    // --- 8. Inisialisasi tsParticles (Fungsi Baru) ---
+    
+    async function initializeParticles(particleColor) {
+        // Akses tsParticles dari window object karena dimuat via CDN non-module script
+        const tsParticles = window.tsParticles;
+
+        if (!tsParticles) {
+            console.error("tsParticles library not loaded.");
+            return;
+        }
+
+        // Pastikan loadBasic dipanggil sekali
+        if (window.loadBasic) {
+             await loadBasic(tsParticles); 
+        }
+
+        // Cek apakah ada instance tsparticles yang sudah berjalan dan hapus
+        const containers = tsParticles.dom();
+        if (containers.length > 0) {
+            containers[0].destroy();
+        }
+
+        tsParticles.load({
+            id: "tsparticles",
+            options: {
+                particles: {
+                    number: {
+                        value: 80, // Jumlah partikel
+                        density: { enable: true, value_area: 800 }
+                    },
+                    color: {
+                        value: particleColor, // Menggunakan warna dari setting tema
+                    },
+                    shape: {
+                        type: "circle",
+                    },
+                    opacity: {
+                        value: 0.5,
+                        random: true,
+                        anim: { enable: true, speed: 1, opacity_min: 0.1, sync: false }
+                    },
+                    size: {
+                        value: 3,
+                        random: true,
+                        anim: { enable: true, speed: 4, size_min: 0.3, sync: false }
+                    },
+                    links: {
+                        enable: true,
+                        distance: 150,
+                        color: particleColor, // Menggunakan warna dari setting tema
+                        opacity: 0.4,
+                        width: 1
+                    },
+                    move: {
+                        enable: true,
+                        speed: 1, // Kecepatan bergerak
+                        direction: "none",
+                        random: false,
+                        straight: false,
+                        out_mode: "bounce", // Pantul dari tepi
+                        bounce: true,
+                    }
+                },
+                interactivity: {
+                    events: {
+                        onhover: {
+                            enable: true,
+                            mode: "repulse" // Efek tolak saat kursor mendekat
+                        },
+                        onclick: {
+                            enable: true,
+                            mode: "push" // Menambah partikel saat diklik
+                        },
+                        resize: true
+                    },
+                    modes: {
+                        repulse: { distance: 100, duration: 0.4 },
+                        push: { particles_nb: 4 }
+                    }
+                },
+                // Atur agar tsParticles mengambil seluruh area viewport (namun kita override dengan CSS)
+                fullScreen: { enable: false },
+                background: {
+                    color: {
+                        value: "transparent" // Biarkan transparan
+                    }
+                }
+            }
+        });
+    }
+
+    // Panggil inisialisasi saat halaman dimuat
     window.onload = async function() {
         // Ambil semua data (link dan settings) dari Cloud
         const cloudData = await getCloudData();
         
-        // 1. Load pengaturan
+        // 1. Load pengaturan & Inisialisasi Particles (dipanggil di dalam loadAndApplySettings)
         loadAndApplySettings(cloudData.settings); 
         
         // 2. Render Link
         renderLinksToStartpage(cloudData.links);
         populateCategorySelect(cloudData.links);
 
-        // 3. Hapus loading text (opsional)
+        // 3. Hapus loading text
         const loadingText = document.getElementById('loading-text');
         if (loadingText) loadingText.remove();
 
@@ -899,4 +1010,3 @@
 
 </body>
 </html>
-
