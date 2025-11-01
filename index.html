@@ -6,7 +6,7 @@
     <title>My Ichi Startpage</title>
     <meta name="robots" content="noindex">
     
-    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
     <style>
         /* CSS ALA TERMINAL (Konfigurasi Warna Disesuaikan) */
         :root {
@@ -47,11 +47,12 @@
             opacity: 0; 
             transition: opacity 0.3s ease;
             position: relative; 
-            z-index: 1; /* Pastikan body/main-container di atas tsparticles */
+            z-index: 1; /* Pastikan body/main-container di atas partikel */
         }
         
         /* 1. CONTAINER tsparticles (Background) */
-        #tsparticles {
+        /* ID ini tetap kita pakai, tapi di-render oleh particles.js */
+        #tsparticles { 
             position: fixed; 
             width: 100%;
             height: 100%;
@@ -788,7 +789,7 @@
         marginBottomSearchInput.value = currentMarginBottomSearch;
         marginBottomSearchValueSpan.textContent = currentMarginBottomSearch;
 
-        // PENTING: Panggil tsParticles di sini setelah mendapatkan warna custom
+        // PENTING: Panggil initializeParticles dengan warna custom
         initializeParticles(settings['--text-color']);
     }
 
@@ -892,91 +893,71 @@
         }
     });
 
-    // --- 8. Inisialisasi tsParticles (Fungsi Baru) ---
+    // --- 8. Inisialisasi Particles.js ---
     
-    async function initializeParticles(particleColor) {
-        // Karena menggunakan CDN Full, kita bisa langsung akses window.tsParticles.
-        const tsParticles = window.tsParticles;
-
-        if (!tsParticles) {
-            console.error("tsParticles library not loaded.");
+    function initializeParticles(particleColor) {
+        if (typeof particlesJS === 'undefined') {
+            console.error("particles.js library not loaded.");
             return;
         }
 
-        // Cek apakah ada instance tsparticles yang sudah berjalan dan hapus
-        const containers = tsParticles.dom();
-        if (containers.length > 0) {
-            containers[0].destroy();
-        }
-
-        tsParticles.load({
-            id: "tsparticles",
-            options: {
-                particles: {
-                    number: {
-                        value: 80, 
-                        density: { enable: true, value_area: 800 }
-                    },
-                    color: {
-                        value: particleColor, // Menggunakan warna dari setting tema
-                    },
-                    shape: {
-                        type: "circle",
-                    },
-                    opacity: {
-                        value: 0.5,
-                        random: true,
-                        anim: { enable: true, speed: 1, opacity_min: 0.1, sync: false }
-                    },
-                    size: {
-                        value: 3,
-                        random: true,
-                        anim: { enable: true, speed: 4, size_min: 0.3, sync: false }
-                    },
-                    links: {
-                        enable: true,
-                        distance: 150,
-                        color: particleColor, // Menggunakan warna dari setting tema
-                        opacity: 0.4,
-                        width: 1
-                    },
-                    move: {
-                        enable: true,
-                        speed: 1, 
-                        direction: "none",
-                        random: false,
-                        straight: false,
-                        out_mode: "bounce", 
-                        bounce: true,
-                    }
+        // Memanggil particlesJS dengan ID container 'tsparticles'
+        particlesJS('tsparticles', { 
+            "particles": {
+                "number": {
+                    "value": 80, // Jumlah partikel
+                    "density": { "enable": true, "value_area": 800 }
                 },
-                interactivity: {
-                    events: {
-                        onhover: {
-                            enable: true,
-                            mode: "repulse" 
-                        },
-                        onclick: {
-                            enable: true,
-                            mode: "push" 
-                        },
-                        resize: true
-                    },
-                    modes: {
-                        repulse: { distance: 100, duration: 0.4 },
-                        push: { particles_nb: 4 }
-                    }
+                "color": {
+                    "value": particleColor // Warna Partikel dari Setting
                 },
-                fullScreen: { enable: false },
-                background: {
-                    color: {
-                        value: "transparent" // Biarkan transparan
-                    }
+                "shape": {
+                    "type": "circle",
+                },
+                "opacity": {
+                    "value": 0.5,
+                    "random": false,
+                    "anim": { "enable": false }
+                },
+                "size": {
+                    "value": 3,
+                    "random": true,
+                    "anim": { "enable": false }
+                },
+                "line_linked": { // particles.js pakai line_linked untuk koneksi antar partikel
+                    "enable": true,
+                    "distance": 150,
+                    "color": particleColor, // Warna Link dari Setting
+                    "opacity": 0.4,
+                    "width": 1
+                },
+                "move": {
+                    "enable": true,
+                    "speed": 1,
+                    "direction": "none",
+                    "random": false,
+                    "straight": false,
+                    "out_mode": "out",
+                    "bounce": false,
+                    "attract": { "enable": false }
                 }
-            }
+            },
+            "interactivity": {
+                "detect_on": "canvas",
+                "events": {
+                    "onhover": { "enable": true, "mode": "repulse" },
+                    "onclick": { "enable": true, "mode": "push" },
+                    "resize": true
+                },
+                "modes": {
+                    "repulse": { "distance": 100, "duration": 0.4 },
+                    "push": { "particles_nb": 4 }
+                }
+            },
+            "retina_detect": true
         });
         
-        console.log(`tsParticles initialized with color: ${particleColor}`);
+        console.log(`particles.js initialized with color: ${particleColor}`);
     }
 
     // Panggil inisialisasi saat halaman dimuat
@@ -984,7 +965,7 @@
         // Ambil semua data (link dan settings) dari Cloud
         const cloudData = await getCloudData();
         
-        // 1. Load pengaturan & Inisialisasi Particles 
+        // 1. Load pengaturan & Inisialisasi Particles (dipanggil di dalam loadAndApplySettings)
         loadAndApplySettings(cloudData.settings); 
         
         // 2. Render Link
