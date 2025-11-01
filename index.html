@@ -516,9 +516,9 @@
                 await setDoc(docRef, globalData);
             }
             
+            // Hapus loading text setelah selesai memuat data
             if (loadingText && loadingText.parentNode) {
-                // Hanya hapus loading text jika data sudah siap
-                loadingText.parentNode.removeChild(loadingText);
+                 loadingText.remove();
             } 
 
         } catch (e) {
@@ -612,6 +612,7 @@
             html += `<h4>${category.name}</h4>`;
             
             category.links.forEach((link, linkIndex) => {
+                // Hati-hati dengan tanda kutip di nama kategori
                 const categoryEscaped = category.name.replace(/'/g, "\\'");
                 html += `
                     <div class="edit-link-item" data-category="${category.name}" data-index="${linkIndex}" data-custom="${link.isCustom}">
@@ -643,10 +644,11 @@
         const link = category.links[linkIndex];
         
         // Ganti alert/prompt dengan modal kustom jika ini adalah aplikasi di luar Canvas
-        const newText = prompt(`Edit Teks untuk "${link.text}":`, link.text);
+        // Menggunakan window.prompt/confirm untuk kesederhanaan di Canvas
+        const newText = window.prompt(`Edit Teks untuk "${link.text}":`, link.text);
         if (newText === null || newText.trim() === "") return; 
 
-        const newUrl = prompt(`Edit URL untuk "${newText}":`, link.url);
+        const newUrl = window.prompt(`Edit URL untuk "${newText}":`, link.url);
         if (newUrl === null || newUrl.trim() === "") return; 
         
         link.text = newText.trim();
@@ -840,20 +842,39 @@
     });
 
     // --- 7. Logika Modal & Inisialisasi ---
+    
+    // Fungsi untuk inisialisasi semua event listener untuk tombol footer dan modal
+    function initializeEventListeners() {
+        // Event Listener untuk Tombol Footer
+        document.getElementById('config-btn').addEventListener('click', function(event) { 
+            event.preventDefault(); 
+            configModal.style.display = 'block'; 
+        });
+        
+        document.getElementById('edit-link-btn').addEventListener('click', function(event) { 
+            event.preventDefault(); 
+            window.renderEditModal(); 
+        });
+        
+        document.getElementById('add-link-btn').addEventListener('click', function(event) { 
+            event.preventDefault(); 
+            addModal.style.display = 'block'; 
+            populateCategorySelect(globalData.links); 
+        }); 
 
-    document.getElementById('config-btn').onclick = function(event) { event.preventDefault(); configModal.style.display = 'block'; }
-    document.getElementById('edit-link-btn').onclick = function(event) { event.preventDefault(); window.renderEditModal(); }
-    document.getElementById('add-link-btn').onclick = function(event) { event.preventDefault(); addModal.style.display = 'block'; populateCategorySelect(globalData.links); } 
+        // Event Listener untuk tombol Close (X dan Selesai)
+        document.querySelectorAll('.config-close-btn').forEach(btn => btn.onclick = function() { configModal.style.display = 'none'; });
+        document.querySelectorAll('.edit-close-btn').forEach(btn => btn.onclick = function() { editModal.style.display = 'none'; });
+        document.querySelectorAll('.add-close-btn').forEach(btn => btn.onclick = function() { addModal.style.display = 'none'; });
 
-    document.querySelectorAll('.config-close-btn').forEach(btn => btn.onclick = function() { configModal.style.display = 'none'; });
-    document.querySelectorAll('.edit-close-btn').forEach(btn => btn.onclick = function() { editModal.style.display = 'none'; });
-    document.querySelectorAll('.add-close-btn').forEach(btn => btn.onclick = function() { addModal.style.display = 'none'; });
-
-    window.onclick = function(event) {
-        if (event.target === configModal) { configModal.style.display = 'none'; }
-        if (event.target === editModal) { editModal.style.display = 'none'; }
-        if (event.target === addModal) { addModal.style.display = 'none'; }
+        // Event Listener untuk klik di luar modal (Menutup modal)
+        window.onclick = function(event) {
+            if (event.target === configModal) { configModal.style.display = 'none'; }
+            if (event.target === editModal) { editModal.style.display = 'none'; }
+            if (event.target === addModal) { addModal.style.display = 'none'; }
+        }
     }
+
 
     // Logika Search
     searchInput.addEventListener('keypress', function(event) {
@@ -876,7 +897,9 @@
 
         // 3. Render links
         renderLinksToStartpage(globalData.links);
-        populateCategorySelect(globalData.links);
+        
+        // 4. Inisialisasi event listeners untuk tombol-tombol
+        initializeEventListeners();
     };
 </script>
 
