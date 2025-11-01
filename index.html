@@ -9,27 +9,74 @@
     <style>
         /* CSS ALA TERMINAL (Konfigurasi Warna Disesuaikan) */
         :root {
+            /* Warna dan Radius */
             --bg-color: #000000;
             --text-color: #00ffaa;
             --hover-color: #ffffff; 
             --border-radius: 0px; 
-            --font: 'Fira Code', 'DejaVu Sans Mono', monospace;
+            
+            /* Font dan Ukuran */
+            --font-family: 'Fira Code', 'DejaVu Sans Mono', monospace;
+            --font-size-base: 1.0; /* dalam em */
+            --line-spacing: 5px; /* Jarak baris link */
+
+            /* Margin/Jarak */
+            --margin-top-banner: 20px; 
+            --margin-bottom-search: 50px;
+
+            /* Banner URL default */
+            --banner-url: url('https://picsum.photos/id/431/350/500'); 
         }
 
         body {
             background-color: var(--bg-color);
             color: var(--text-color);
-            font-family: var(--font);
+            font-family: var(--font-family); /* Menggunakan variabel baru */
+            font-size: calc(var(--font-size-base) * 1em); /* Menggunakan variabel baru */
             margin: 0;
             padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
             min-height: 100vh;
             text-shadow: 0 0 5px rgba(0, 255, 170, 0.3);
             transition: background-color 0.3s, color 0.3s, text-shadow 0.3s;
+            display: flex; /* Aktifkan Flexbox di body */
+            justify-content: center;
+            align-items: center; /* PENTING: Untuk centering vertikal main-container */
         }
 
+        /* CONTAINER UTAMA UNTUK LAYOUT SAMPINGAN */
+        .main-container {
+            display: flex;
+            width: 100%;
+            max-width: 1200px; /* Batasan lebar keseluruhan */
+            margin: 0;
+            align-items: center; /* Diubah untuk centering horizontal konten */
+        }
+        
+        /* KOLOM KIRI: BANNER/COVER */
+        .banner-column {
+            flex: 0 0 350px; /* Lebar tetap 350px untuk banner */
+            margin-right: 40px;
+            margin-top: var(--margin-top-banner); /* Menggunakan variabel baru */
+        }
+
+        .banner-column img { 
+            width: 100%; 
+            /* Memberi tinggi default agar layout tidak berantakan sebelum image terload */
+            height: 500px; 
+            display: block; 
+            border-radius: var(--border-radius); 
+            box-shadow: 0 0 15px var(--text-color); 
+            transition: box-shadow 0.3s, border-radius 0.3s; 
+            /* PENTING: object-fit untuk GIF/gambar vertikal */
+            object-fit: cover; 
+        }
+
+        /* KOLOM KANAN: KONTEN (Search, Links, Footer) */
+        .content-column {
+            flex-grow: 1; /* Ambil sisa ruang yang ada */
+            margin-top: var(--margin-top-banner); /* Samakan margin atas dengan banner */
+        }
+        
         a {
             color: var(--text-color);
             text-decoration: none;
@@ -40,40 +87,94 @@
             color: var(--hover-color);
             text-decoration: underline;
         }
-        
-        /* CSS Modal dan Layout lainnya */
-        .banner-container { width: 100%; max-width: 900px; margin-bottom: 40px; position: relative; }
-        .banner-container img { 
-            width: 100%; height: auto; display: block; 
-            border-radius: var(--border-radius); 
-            box-shadow: 0 0 15px var(--text-color); 
-            transition: box-shadow 0.3s, border-radius 0.3s; 
+
+        /* FIX: Menambahkan specificity agar link hover di dropdown juga bekerja */
+        .category ul li a:hover {
+            color: var(--hover-color); 
+            text-decoration: underline;
         }
-        .search-container { margin-bottom: 50px; width: 100%; max-width: 600px; text-align: center; }
+        
+        .search-container { 
+            margin-bottom: var(--margin-bottom-search); /* Menggunakan variabel baru */
+            width: 100%; max-width: 600px; text-align: left; 
+        }
         #search-input { 
-            width: 90%; padding: 10px; background: var(--bg-color); color: var(--text-color); 
-            border: 2px solid var(--text-color); font-family: var(--font); font-size: 1em; 
+            width: 90%; 
+            padding: 10px; 
+            background: var(--bg-color); 
+            color: var(--text-color); 
+            border: 2px solid var(--text-color); 
+            font-family: var(--font-family); 
+            font-size: 1em; 
             outline: none; 
             border-radius: var(--border-radius); 
             box-shadow: 0 0 10px var(--text-color); 
             transition: border-color 0.3s, box-shadow 0.3s, border-radius 0.3s; 
         }
         .link-columns { 
-            display: flex; flex-wrap: wrap; justify-content: center; 
-            gap: 60px; width: 100%; max-width: 900px; margin-bottom: 80px; 
+            /* Mengubah dari flex-wrap ke grid untuk layout 2 kolom responsif */
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px 40px; /* Jarak vertikal dan horizontal */
+            width: 100%; 
+            max-width: 800px; 
+            margin-bottom: 80px; 
         }
-        .category-group { display: flex; flex-direction: column; gap: 30px; }
-        .category { min-width: 200px; position: relative; padding-right: 20px; }
+        .category-group { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 30px; 
+        }
+        
+        /* DROPDOWN MENGGANTUNG DIBUAT DENGAN HOVER */
+        .category { 
+            min-width: 200px; 
+            position: relative; 
+            padding-right: 20px; 
+        }
+
         .category h3 { cursor: pointer; margin-bottom: 0; font-size: 1em; text-transform: capitalize; }
         .category h3::before { content: '>'; color: var(--text-color); margin-right: 5px; transition: transform 0.2s ease-out; display: inline-block; }
-        .category ul { list-style: none; padding: 5px 0 0 15px; display: none; min-width: 150px; z-index: 10; }
+        
+        .category ul { 
+            list-style: none; 
+            padding: 5px 15px; 
+            position: absolute; 
+            /* EDIT MANUAL DI SINI: Ubah nilai 50px sesuai keinginanmu */
+            left: 50px; 
+            /* Overlap agar celah hilang */
+            top: 100%; 
+            margin-top: -10px; 
+            display: none; 
+            min-width: 150px; 
+            z-index: 10;
+            background-color: rgba(0, 0, 0, 0.95); 
+            border: 1px solid var(--text-color); 
+            box-shadow: 0 0 10px rgba(0, 255, 170, 0.5); 
+            border-radius: var(--border-radius);
+        }
+        
         .category:hover ul { display: block; }
         .category:hover h3::before { content: 'v'; }
-        .category ul li { margin-bottom: 5px; font-size: 0.9em; }
-        .category ul li::before { content: '>> '; color: var(--text-color); }
-        .footer-options { width: 100%; max-width: 900px; display: flex; justify-content: center; gap: 30px; font-size: 0.9em; text-align: center; }
-        .footer-options a { padding: 5px 0; }
         
+        .category ul li { 
+            margin-bottom: var(--line-spacing); /* Menggunakan variabel baru */
+            font-size: 0.9em; 
+        }
+        .category ul li::before { content: '>> '; color: var(--text-color); }
+        
+        .footer-options { 
+            width: 100%; 
+            max-width: 800px; /* Samakan dengan lebar link-columns */
+            display: flex; 
+            justify-content: flex-start; /* Sejajarkan ke kiri */
+            gap: 30px; 
+            font-size: 0.9em; 
+            text-align: center; 
+            margin-top: 40px;
+        }
+
+        /* MODALS (Tidak Berubah) */
         .modal { display: none; position: fixed; z-index: 20; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0, 0, 0, 0.8); }
         .modal-content {
             background-color: var(--bg-color);
@@ -93,26 +194,32 @@
         .modal-content label { display: block; margin-top: 10px; margin-bottom: 5px; }
         .modal-content input[type="color"], 
         .modal-content input[type="text"], 
-        .modal-content select { 
+        .modal-content select,
+        .modal-content input[type="range"] { 
             width: 98%; 
             padding: 8px; 
             margin-top: 5px; 
             background: var(--bg-color); 
             color: var(--text-color); 
             border: 1px solid var(--text-color); 
-            font-family: var(--font); 
+            font-family: var(--font-family); 
             font-size: 1em; 
             outline: none; 
             box-sizing: border-box; 
         }
         .modal-content input[type="color"] { width: 50px; padding: 0; margin-left: 10px; height: 30px; }
-        .modal-content input[type="range"] { width: 80%; margin-left: 10px; }
+        .modal-content input[type="range"] { 
+            width: 80%; 
+            margin-left: 10px;
+            padding: 0;
+            border: none;
+        }
         .modal-content button { 
             background-color: var(--text-color); 
             color: var(--bg-color); 
             border: none; padding: 8px 15px; 
             margin-top: 20px; cursor: pointer; 
-            font-family: var(--font); margin-right: 5px; 
+            font-family: var(--font-family); margin-right: 5px; 
         }
         .modal-content button:hover { opacity: 0.8; }
 
@@ -131,32 +238,59 @@
         .edit-link-actions button { background-color: var(--text-color); color: var(--bg-color); padding: 3px 8px; margin: 0 2px; font-size: 0.8em; margin-top: 0; }
         
         @media (max-width: 768px) {
+            /* Ubah Flexbox menjadi tumpukan vertikal di layar kecil */
+            .main-container { flex-direction: column; align-items: center; }
+            .banner-column { 
+                flex: none; /* Nonaktifkan flex */
+                width: 100%; 
+                max-width: 400px; /* Batasi lebar banner di mobile */
+                margin-right: 0; 
+                margin-bottom: 40px; 
+            }
+            .content-column { 
+                width: 100%; 
+                margin-top: 0; 
+                padding: 0 10px; 
+            }
+            .search-container { text-align: center; }
+            #search-input { width: 95%; }
+            .link-columns { grid-template-columns: 1fr; max-width: none; }
+            .category-group { width: 100%; }
+            .footer-options { justify-content: center; max-width: none; flex-wrap: wrap; }
             .modal-content { margin: 5% auto; width: 95%; }
-            .link-columns { flex-direction: column; align-items: flex-start; gap: 30px; margin-bottom: 60px; }
-            .category-group { width: 100%; } 
-            .footer-options { flex-direction: column; gap: 15px; }
         }
     </style>
 </head>
 <body>
     
-<div class="banner-container">
-    <img id="main-banner" src="https://picsum.photos/id/103/900/200" alt="Startpage Banner">
-</div>
+<div class="main-container">
+    
+    <!-- KOLOM KIRI (BANNER) -->
+    <div class="banner-column">
+        <!-- Gambar Cover Vertikal/Kotak -->
+        <img id="main-banner" src="https://picsum.photos/id/431/350/500" alt="Startpage Banner">
+    </div>
 
-<div class="search-container">
-    <input type="text" id="search-input" placeholder=">> Ketik dan tekan Enter untuk mencari (Google)...">
-</div>
+    <!-- KOLOM KANAN (CONTENT) -->
+    <div class="content-column">
+        
+        <div class="search-container">
+            <input type="text" id="search-input" placeholder=">> Ketik dan tekan Enter untuk mencari (Google)...">
+        </div>
 
-<div class="link-columns" id="link-columns">
-    <!-- Konten link di sini akan digenerate dari JavaScript -->
-    <h3 id="loading-text">Memuat data dari Cloud...</h3>
-</div>
+        <div class="link-columns" id="link-columns">
+            <!-- Konten link di sini akan digenerate dari JavaScript -->
+            <h3 id="loading-text">Memuat data dari Cloud...</h3>
+        </div>
 
-<div class="footer-options">
-    <a href="#" id="add-link-btn">[ add new link ]</a>
-    <a href="#" id="edit-link-btn">[ edit links ]</a>
-    <a href="#" id="config-btn">[ configuration ]</a>
+        <div class="footer-options">
+            <a href="#" id="add-link-btn">[ add new link ]</a>
+            <a href="#" id="edit-link-btn">[ edit links ]</a>
+            <a href="#" id="config-btn">[ configuration ]</a>
+        </div>
+
+    </div>
+    
 </div>
 
 <!-- MODALS -->
@@ -165,17 +299,48 @@
         <span class="close-btn config-close-btn">×</span>
         <h3>[ Konfigurasi Tampilan ]</h3>
         <form id="color-config-form">
-            <label for="bg-color-input">Warna Latar Belakang:</label>
-            <input type="color" id="bg-color-input" name="bg-color" value="#000000">
-            <!-- Input warna dan radius lainnya -->
+            <!-- PENGATURAN WARNA & SUDUT -->
+            <h4>TEMA VISUAL</h4>
+            <label for="bg-color-input">Warna Latar Belakang (BG):</label>
+            <input type="color" id="bg-color-input" name="bg-color">
             <label for="text-color-input">Warna Teks & Glow:</label>
-            <input type="color" id="text-color-input" name="text-color" value="#00ffaa">
-
+            <input type="color" id="text-color-input" name="text-color">
             <label for="hover-color-input">Warna Teks Saat Hover:</label>
-            <input type="color" id="hover-color-input" name="hover-color" value="#ffffff">
-
+            <input type="color" id="hover-color-input" name="hover-color">
             <label for="radius-input">Radius Sudut (0-20px): <span id="radius-value">0</span>px</label>
             <input type="range" id="radius-input" name="radius" min="0" max="20" value="0">
+            
+            <!-- PENGATURAN BANNER IMAGE -->
+            <h4 style="margin-top: 30px;">BANNER / COVER SAMPING</h4>
+            <label for="banner-url-input">URL Gambar/GIF Cover:</label>
+            <!-- Input URL -->
+            <input type="text" id="banner-url-input" name="banner-url" placeholder="Contoh: https://i.imgur.com/your-gif.gif">
+
+
+            <!-- PENGATURAN FONT -->
+            <h4 style="margin-top: 30px;">FONTO DAN UKURAN</h4>
+            <label for="font-family-select">Jenis Font (Monospace):</label>
+            <select id="font-family-select">
+                <option value="'Fira Code', monospace">Fira Code (Default)</option>
+                <option value="'JetBrains Mono', monospace">JetBrains Mono</option>
+                <option value="'Cousine', monospace">Cousine</option>
+                <option value="'DejaVu Sans Mono', monospace">DejaVu Sans Mono</option>
+            </select>
+            
+            <label for="font-size-input">Ukuran Font Dasar (0.8 - 1.2 em): <span id="font-size-value">1.0</span>em</label>
+            <input type="range" id="font-size-input" name="font-size" min="0.8" max="1.2" step="0.05" value="1.0">
+            
+            <label for="line-spacing-input">Jarak Baris Link (0-15px): <span id="line-spacing-value">5</span>px</label>
+            <input type="range" id="line-spacing-input" name="line-spacing" min="0" max="15" step="1" value="5">
+
+            <!-- PENGATURAN JARAK -->
+            <h4 style="margin-top: 30px;">JARAK LAYOUT (MARGIN)</h4>
+            <label for="margin-top-banner-input">Margin Atas Cover (0-50px): <span id="margin-top-banner-value">20</span>px</label>
+            <input type="range" id="margin-top-banner-input" name="margin-top-banner" min="0" max="50" step="5" value="20">
+
+            <label for="margin-bottom-search-input">Margin Bawah Search (20-100px): <span id="margin-bottom-search-value">50</span>px</label>
+            <input type="range" id="margin-bottom-search-input" name="margin-bottom-search" min="20" max="100" step="5" value="50">
+
             <button type="submit">Simpan dan Terapkan</button>
         </form>
         <button id="reset-btn">Kembalikan ke Default</button>
@@ -250,10 +415,20 @@
     // --- 2. Konfigurasi Default & Global Scope ---
 
     const defaultSettings = {
+        // WARNA
         '--bg-color': '#000000',
         '--text-color': '#00ffaa',
         '--hover-color': '#ffffff',
-        '--border-radius': '0px'
+        '--border-radius': '0px',
+        // BANNER URL
+        'bannerUrl': 'https://picsum.photos/id/431/350/500', 
+        // FONT
+        '--font-family': "'Fira Code', 'DejaVu Sans Mono', monospace",
+        '--font-size-base': '1.0', // dalam em
+        '--line-spacing': '5px',
+        // MARGIN
+        '--margin-top-banner': '20px',
+        '--margin-bottom-search': '50px'
     };
 
     // Struktur Default Link (Akan digunakan jika Cloud Data kosong)
@@ -284,8 +459,21 @@
     const editModal = document.getElementById('edit-modal');
     const addModal = document.getElementById('add-modal'); 
     const searchInput = document.getElementById('search-input');
+    const mainBanner = document.getElementById('main-banner'); 
+    
+    // Config form elements
+    const bannerUrlInput = document.getElementById('banner-url-input'); 
     const radiusInput = document.getElementById('radius-input');
     const radiusValueSpan = document.getElementById('radius-value');
+    const fontSizeInput = document.getElementById('font-size-input');
+    const fontSizeValueSpan = document.getElementById('font-size-value');
+    const lineSpacingInput = document.getElementById('line-spacing-input');
+    const lineSpacingValueSpan = document.getElementById('line-spacing-value');
+    const marginTopBannerInput = document.getElementById('margin-top-banner-input');
+    const marginTopBannerValueSpan = document.getElementById('margin-top-banner-value');
+    const marginBottomSearchInput = document.getElementById('margin-bottom-search-input');
+    const marginBottomSearchValueSpan = document.getElementById('margin-bottom-search-value');
+    
     const linkColumnsContainer = document.getElementById('link-columns');
     const linkListContainer = document.getElementById('link-list-container');
     const addLinkForm = document.getElementById('add-link-form'); 
@@ -340,7 +528,7 @@
 
         try {
             const docRef = doc(db, "users", USER_DATA_ID);
-            await setDoc(docRef, { links: filteredLinks });
+            await setDoc(docRef, { links: filteredLinks }, { merge: true }); // Merge agar setting tidak terhapus
             
             // Re-render tampilan setelah menyimpan
             renderLinksToStartpage(filteredLinks);
@@ -349,27 +537,32 @@
         } catch (e) {
             console.error("Gagal menyimpan link ke Cloud Firestore:", e);
             // Tambahkan notifikasi error ke user jika gagal simpan
-            alert('Gagal menyimpan data ke Cloud. Cek Console Log untuk detail.');
+            console.error('Gagal menyimpan data ke Cloud. Cek Console Log untuk detail.');
         }
     }
 
     // --- 5. Render & Global Functions ---
 
+    // Fungsi untuk update banner image
+    function updateBannerImage(url) {
+        // Cek jika URL adalah string kosong, gunakan placeholder
+        if (!url || url.trim() === '') {
+            mainBanner.src = defaultSettings.bannerUrl;
+        } else {
+            mainBanner.src = url;
+            // Ini opsional: atur tinggi agar fleksibel dengan gambar asli
+            mainBanner.style.height = 'auto'; 
+        }
+    }
+
+
     function renderLinksToStartpage(links) {
         let html = '';
-        let count = 0;
         
         // Reset container
         linkColumnsContainer.innerHTML = '';
 
-        html += '<div class="category-group">';
-        
         links.forEach((category) => {
-            // Memastikan tata letak 3 kolom di layar lebar
-            if (count > 0 && count % 3 === 0) {
-                html += '</div><div class="category-group">';
-            }
-
             if (category.links && category.links.length > 0) {
                 html += `
                     <div class="category">
@@ -381,11 +574,9 @@
                         </ul>
                     </div>
                 `;
-                count++;
             }
         });
 
-        html += '</div>';
         linkColumnsContainer.innerHTML = html;
     }
 
@@ -399,6 +590,8 @@
             html += `<h4>${category.name}</h4>`;
             
             category.links.forEach((link, linkIndex) => {
+                // Gunakan escape untuk mencegah error di onclick attribute
+                const categoryEscaped = category.name.replace(/'/g, "\\'");
                 html += `
                     <div class="edit-link-item" data-category="${category.name}" data-index="${linkIndex}" data-custom="${link.isCustom}">
                         <div class="edit-link-info">
@@ -407,8 +600,8 @@
                             ${link.isCustom ? '<span style="color:red;">(CUSTOM)</span>' : '<span style="opacity:0.5;">(DEFAULT)</span>'}
                         </div>
                         <div class="edit-link-actions">
-                            <button onclick="editLink('${category.name.replace(/'/g, "\\'")}', ${linkIndex})">Edit</button>
-                            <button onclick="deleteLink('${category.name.replace(/'/g, "\\'")}', ${linkIndex})">Hapus</button>
+                            <button onclick="editLink('${categoryEscaped}', ${linkIndex})">Edit</button>
+                            <button onclick="deleteLink('${categoryEscaped}', ${linkIndex})">Hapus</button>
                         </div>
                     </div>
                 `;
@@ -487,14 +680,14 @@
         const newCategory = document.getElementById('new-category-name').value.trim();
         
         if (!text || !url) {
-            alert('Teks Link dan URL tidak boleh kosong.');
+            console.error('Teks Link dan URL tidak boleh kosong.');
             return;
         }
 
         let categoryName = newCategory || selectedCategory;
 
         if (!categoryName) {
-            alert('Pilih Kategori atau isi Kategori Baru.');
+            console.error('Pilih Kategori atau isi Kategori Baru.');
             return;
         }
 
@@ -522,18 +715,29 @@
         renderLinksToStartpage(updatedLinks);
     });
 
-    // --- 6. Logika Konfigurasi Warna (Menggunakan Local Storage) ---
+    // --- 6. Logika Konfigurasi Warna & Banner (Menggunakan Local Storage) ---
 
+    // Mengambil nilai range yang valid
+    function getRangeValue(inputElement, defaultValue) {
+        return inputElement.value ? inputElement.value : defaultValue;
+    }
+
+    // Memuat pengaturan dari Local Storage atau default
     function loadAndApplySettings() {
         let settings = defaultSettings;
         const savedSettings = localStorage.getItem('ichi_settings');
         
         if (savedSettings) {
-            settings = JSON.parse(savedSettings);
+            // Gunakan Object.assign untuk memastikan properti baru (bannerUrl) ada
+            settings = Object.assign({}, defaultSettings, JSON.parse(savedSettings)); 
         }
         
+        // Terapkan semua properti CSS ke root
         for (const [key, value] of Object.entries(settings)) {
-            root.style.setProperty(key, value);
+            // Hanya properti CSS yang dimulai dengan '--' yang dimasukkan ke root
+            if (key.startsWith('--')) {
+                root.style.setProperty(key, value);
+            }
         }
         
         // Update input field values in config modal
@@ -541,44 +745,111 @@
         document.getElementById('text-color-input').value = settings['--text-color'] || defaultSettings['--text-color'];
         document.getElementById('hover-color-input').value = settings['--hover-color'] || defaultSettings['--hover-color'];
         
+        // BANNER URL
+        const currentBannerUrl = settings['bannerUrl'] || defaultSettings.bannerUrl;
+        bannerUrlInput.value = currentBannerUrl;
+        updateBannerImage(currentBannerUrl); // Terapkan URL ke <img>
+
+        // Update input range/select dan value span
+        
+        // Radius
         const currentRadius = parseInt(settings['--border-radius']) || 0;
         radiusInput.value = currentRadius;
         radiusValueSpan.textContent = currentRadius;
+
+        // Font Family
+        document.getElementById('font-family-select').value = settings['--font-family'] || defaultSettings['--font-family'];
+        
+        // Font Size
+        const currentFontSize = parseFloat(settings['--font-size-base']) || 1.0;
+        fontSizeInput.value = currentFontSize;
+        fontSizeValueSpan.textContent = currentFontSize.toFixed(2);
+
+        // Line Spacing
+        const currentLineSpacing = parseInt(settings['--line-spacing']) || 5;
+        lineSpacingInput.value = currentLineSpacing;
+        lineSpacingValueSpan.textContent = currentLineSpacing;
+
+        // Margin Top Banner
+        const currentMarginTopBanner = parseInt(settings['--margin-top-banner']) || 20;
+        marginTopBannerInput.value = currentMarginTopBanner;
+        marginTopBannerValueSpan.textContent = currentMarginTopBanner;
+
+        // Margin Bottom Search
+        const currentMarginBottomSearch = parseInt(settings['--margin-bottom-search']) || 50;
+        marginBottomSearchInput.value = currentMarginBottomSearch;
+        marginBottomSearchValueSpan.textContent = currentMarginBottomSearch;
     }
 
+    // Event listener untuk update span saat range diubah
     radiusInput.oninput = function() { radiusValueSpan.textContent = this.value; }
+    fontSizeInput.oninput = function() { fontSizeValueSpan.textContent = parseFloat(this.value).toFixed(2); }
+    lineSpacingInput.oninput = function() { lineSpacingValueSpan.textContent = this.value; }
+    marginTopBannerInput.oninput = function() { marginTopBannerValueSpan.textContent = this.value; }
+    marginBottomSearchInput.oninput = function() { marginBottomSearchValueSpan.textContent = this.value; }
 
     document.getElementById('color-config-form').addEventListener('submit', function(event) {
         event.preventDefault();
         
+        // Ambil semua nilai dari form
         const newBgColor = document.getElementById('bg-color-input').value;
         const newTextColor = document.getElementById('text-color-input').value;
         const newHoverColor = document.getElementById('hover-color-input').value;
-        const newRadius = document.getElementById('radius-input').value + 'px';
+        const newRadius = getRangeValue(radiusInput, 0) + 'px';
+        const newFontFamily = document.getElementById('font-family-select').value;
+        const newFontSize = getRangeValue(fontSizeInput, 1.0);
+        const newLineSpacing = getRangeValue(lineSpacingInput, 5) + 'px';
+        const newMarginTopBanner = getRangeValue(marginTopBannerInput, 20) + 'px';
+        const newMarginBottomSearch = getRangeValue(marginBottomSearchInput, 50) + 'px';
+        const newBannerUrl = bannerUrlInput.value.trim(); 
 
+
+        // Terapkan ke Root Style
         root.style.setProperty('--bg-color', newBgColor);
         root.style.setProperty('--text-color', newTextColor);
         root.style.setProperty('--hover-color', newHoverColor);
         root.style.setProperty('--border-radius', newRadius);
+        root.style.setProperty('--font-family', newFontFamily);
+        root.style.setProperty('--font-size-base', newFontSize);
+        root.style.setProperty('--line-spacing', newLineSpacing);
+        root.style.setProperty('--margin-top-banner', newMarginTopBanner);
+        root.style.setProperty('--margin-bottom-search', newMarginBottomSearch);
         
+        // Terapkan Banner
+        updateBannerImage(newBannerUrl);
+
+        // Simpan ke Local Storage
         const newSettings = { 
             '--bg-color': newBgColor, 
             '--text-color': newTextColor, 
             '--hover-color': newHoverColor, 
-            '--border-radius': newRadius 
+            '--border-radius': newRadius,
+            'bannerUrl': newBannerUrl, 
+            '--font-family': newFontFamily,
+            '--font-size-base': newFontSize,
+            '--line-spacing': newLineSpacing,
+            '--margin-top-banner': newMarginTopBanner,
+            '--margin-bottom-search': newMarginBottomSearch,
         };
         localStorage.setItem('ichi_settings', JSON.stringify(newSettings));
 
         configModal.style.display = 'none';
+        
+        // Wajib reload untuk menerapkan perubahan margin/font agar body terupdate
+        window.location.reload(); 
     });
 
     document.getElementById('reset-btn').addEventListener('click', function() {
         localStorage.removeItem('ichi_settings');
+        // Terapkan default
         for (const [key, value] of Object.entries(defaultSettings)) {
-            root.style.setProperty(key, value);
+            if (key.startsWith('--')) {
+                root.style.setProperty(key, value);
+            }
         }
-        loadAndApplySettings(); 
-        configModal.style.display = 'none';
+        updateBannerImage(defaultSettings.bannerUrl);
+        // Force reload untuk memastikan CSS dan JS membaca default settings
+        window.location.reload();
     });
 
     // --- 7. Logika Modal & Inisialisasi ---
@@ -610,8 +881,10 @@
 
     // Panggil inisialisasi saat halaman dimuat
     window.onload = async function() {
-        const links = await getLinks();
+        // PENTING: Load pengaturan harus duluan sebelum render link
         loadAndApplySettings(); 
+        
+        const links = await getLinks();
         renderLinksToStartpage(links);
         populateCategorySelect(links);
     };
