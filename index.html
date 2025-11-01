@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Ichi Startpage</title>
+    <meta name="robots" content="noindex">
+    <style>
+        /* CSS ALA TERMINAL (Konfigurasi Warna Disesuaikan) */
+        :root {
+            --bg-color: #000000;
+            --text-color: #00ffaa;
+            --hover-color: #ffffff; 
+            --border-radius: 0px; 
+            --font: 'Fira Code', 'DejaVu Sans Mono', monospace;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            text-shadow: 0 0 5px rgba(0, 255, 170, 0.3);
+            transition: background-color 0.3s, color 0.3s, text-shadow 0.3s;
+        }
+
+        a {
+            color: var(--text-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--hover-color);
+            text-decoration: underline;
+        }
+        
+        /* CSS Modal dan Layout lainnya dipertahankan */
+        .banner-container { width: 100%; max-width: 900px; margin-bottom: 40px; position: relative; }
+        .banner-container img { 
+            width: 100%; height: auto; display: block; 
+            border-radius: var(--border-radius); 
+            box-shadow: 0 0 15px var(--text-color); 
+            transition: box-shadow 0.3s, border-radius 0.3s; 
+        }
+        .search-container { margin-bottom: 50px; width: 100%; max-width: 600px; text-align: center; }
+        #search-input { 
+            width: 90%; padding: 10px; background: var(--bg-color); color: var(--text-color); 
+            border: 2px solid var(--text-color); font-family: var(--font); font-size: 1em; 
+            outline: none; 
+            border-radius: var(--border-radius); 
+            box-shadow: 0 0 10px var(--text-color); 
+            transition: border-color 0.3s, box-shadow 0.3s, border-radius 0.3s; 
+        }
+        .link-columns { display: flex; flex-wrap: wrap; justify-content: center; gap: 60px; width: 100%; max-width: 900px; margin-bottom: 80px; }
+        .category-group { display: flex; flex-direction: column; gap: 30px; }
+        .category { min-width: 200px; position: relative; padding-right: 20px; }
+        .category h3 { cursor: pointer; margin-bottom: 0; font-size: 1em; text-transform: capitalize; }
+        .category h3::before { content: '>'; color: var(--text-color); margin-right: 5px; transition: transform 0.2s ease-out; display: inline-block; }
+        .category ul { list-style: none; padding: 5px 0 0 15px; display: none; min-width: 150px; z-index: 10; }
+        .category:hover ul { display: block; }
+        .category:hover h3::before { content: 'v'; }
+        .category ul li { margin-bottom: 5px; font-size: 0.9em; }
+        .category ul li::before { content: '>> '; color: var(--text-color); }
+        .footer-options { width: 100%; max-width: 900px; display: flex; justify-content: center; gap: 30px; font-size: 0.9em; text-align: center; }
+        .footer-options a { padding: 5px 0; }
+        
+        .modal { display: none; position: fixed; z-index: 20; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0, 0, 0, 0.8); }
+        .modal-content {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 10% auto;
+            padding: 20px;
+            border: 2px solid var(--text-color);
+            width: 90%;
+            max-width: 700px; 
+            box-shadow: 0 0 15px var(--text-color);
+            font-size: 1em;
+            border-radius: var(--border-radius);
+            transition: border-radius 0.3s;
+        }
+        .close-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; }
+        .close-btn:hover, .close-btn:focus { color: #fff; text-decoration: none; cursor: pointer; }
+        .modal-content label { display: block; margin-top: 10px; margin-bottom: 5px; }
+        .modal-content input[type="color"], 
+        .modal-content input[type="text"], 
+        .modal-content select { 
+            width: 98%; 
+            padding: 8px; 
+            margin-top: 5px; 
+            background: var(--bg-color); 
+            color: var(--text-color); 
+            border: 1px solid var(--text-color); 
+            font-family: var(--font); 
+            font-size: 1em; 
+            outline: none; 
+            box-sizing: border-box; 
+        }
+        .modal-content input[type="color"] { width: 50px; padding: 0; margin-left: 10px; height: 30px; }
+        .modal-content input[type="range"] { width: 80%; margin-left: 10px; }
+        .modal-content button { background-color: var(--text-color); color: var(--bg-color); border: none; padding: 8px 15px; margin-top: 20px; cursor: pointer; font-family: var(--font); margin-right: 5px; }
+        .modal-content button:hover { opacity: 0.8; }
+
+        #link-list-container {
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            border-top: 1px solid var(--text-color);
+            padding-top: 10px;
+        }
+        .edit-category-group { margin-bottom: 25px; }
+        .edit-category-group h4 { font-size: 1em; text-transform: uppercase; border-bottom: 1px dashed var(--text-color); padding-bottom: 5px; margin-bottom: 10px; }
+        .edit-link-item { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px dotted rgba(0, 255, 170, 0.2); }
+        .edit-link-info { font-size: 0.9em; word-break: break-all; }
+        .edit-link-info span { display: block; opacity: 0.7; font-size: 0.8em; }
+        .edit-link-actions button { background-color: var(--text-color); color: var(--bg-color); padding: 3px 8px; margin: 0 2px; font-size: 0.8em; margin-top: 0; }
+        
+        @media (max-width: 768px) {
+            .modal-content { margin: 5% auto; width: 95%; }
+            .link-columns { flex-direction: column; align-items: flex-start; gap: 30px; margin-bottom: 60px; }
+            .category-group { width: 100%; } .footer-options { flex-direction: column; gap: 15px; }
+        }
+    </style>
+</head>
+<body>
+    
+<div class="banner-container">
+    <img id="main-banner" src="https://picsum.photos/id/103/900/200" alt="Startpage Banner">
+</div>
+
+<div class="search-container">
+    <input type="text" id="search-input" placeholder=">> Ketik dan tekan Enter untuk mencari (Google)...">
+</div>
+
+<div class="link-columns" id="link-columns">
+    <h3 id="loading-text">Memuat data dari Cloud...</h3>
+</div>
+
+<div class="footer-options">
+    <a href="#" id="add-link-btn">[ add new link ]</a>
+    <a href="#" id="edit-link-btn">[ edit links ]</a>
+    <a href="#" id="config-btn">[ configuration ]</a>
+</div>
+
+<div id="config-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn config-close-btn">×</span>
+        <h3>[ Konfigurasi Tampilan ]</h3>
+        <form id="color-config-form">
+            <label for="bg-color-input">Warna Latar Belakang:</label>
+            <input type="color" id="bg-color-input" name="bg-color" value="#000000">
+            <label for="text-color-input">Warna Teks & Glow:</label>
+            <input type="color" id="text-color-input" name="text-color" value="#00ffaa">
+
+            <label for="hover-color-input">Warna Teks Saat Hover:</label>
+            <input type="color" id="hover-color-input" name="hover-color" value="#ffffff">
+
+            <label for="radius-input">Radius Sudut (0-20px): <span id="radius-value">0</span>px</label>
+            <input type="range" id="radius-input" name="radius" min="0" max="20" value="0">
+            <button type="submit">Simpan dan Terapkan</button>
+        </form>
+        <button id="reset-btn">Kembalikan ke Default</button>
+        <p style="margin-top: 10px; font-size: 0.8em;">*Pengaturan disimpan hanya di browser-mu.</p>
+    </div>
+</div>
+
+<div id="edit-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn edit-close-btn">×</span>
+        <h3>[ Edit Link ]</h3>
+        <p>Semua link disimpan di Firebase Cloud.</p>
+        <div id="link-list-container"></div>
+        <button class="edit-close-btn">Selesai</button>
+    </div>
+</div>
+
+<div id="add-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn add-close-btn">×</span>
+        <h3>[ Tambah Link Baru ]</h3>
+        
+        <form id="add-link-form">
+            <label for="link-text">Teks Link (Contoh: Gmail):</label>
+            <input type="text" id="link-text" required placeholder="Masukkan nama link">
+
+            <label for="link-url">URL Link (Contoh: https://mail.google.com/):</label>
+            <input type="text" id="link-url" required placeholder="https://..." value="https://">
+
+            <label for="link-category">Pilih Kategori:</label>
+            <select id="link-category" required>
+                </select>
+            
+            <p style="margin-top: 10px; font-size: 0.8em;">Jika kategori yang kamu inginkan tidak ada, kamu bisa menambahkannya dengan mengetik di bawah ini.</p>
+            
+            <label for="new-category-name">Atau Tambah Kategori Baru:</label>
+            <input type="text" id="new-category-name" placeholder="Contoh: Productivity">
+
+            <button type="submit">Tambahkan Link</button>
+        </form>
+
+    </div>
+</div>
+
+<script type="module">
+    // Import modul Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebase/9/firebase-app.js";
+    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebase/9/firebase-firestore.js";
+
+    // --- 1. Konfigurasi Firebase Anda ---
+    
+    // GANTI OBJEK DI BAWAH INI dengan objek `firebaseConfig` yang kamu salin di Langkah 1!
+    const firebaseConfig = {
+      apiKey: "PASTE_API_KEY_ANDA_DI_SINI",
+      authDomain: "PASTE_AUTHDOMAIN_ANDA_DI_SINI",
+      projectId: "PASTE_PROJECT_ID_ANDA_DI_SINI",
+      storageBucket: "PASTE_STORAGE_BUCKET_ANDA_DI_SINI",
+      messagingSenderId: "PASTE_MESSAGING_SENDER_ID_ANDA_DI_SINI",
+      appId: "PASTE_APP_ID_ANDA_DI_SINI"
+    };
+    /* PASTE CONFIG KAMU DI SINI */
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // ID Unik Pengguna (Gunakan ID ini sebagai nama dokumen di Firestore)
+    // Nanti bisa diganti dengan UID dari Firebase Auth.
+    const USER_DATA_ID = "StartpageData"; 
+
+    // --- 2. Konfigurasi Default & Global Scope ---
+
+    const defaultSettings = {
+        '--bg-color': '#000000',
+        '--text-color': '#00ffaa',
+        '--hover-color': '#ffffff',
+        '--border-radius': '0px'
+    };
+
+    // Struktur Default Link (Akan digunakan jika Cloud Data kosong)
+    const defaultLinks = [
+        { name: "Entertainment", links: [
+            { text: "Netflix", url: "https://www.netflix.com/", isCustom: false },
+            { text: "Spotify", url: "https://www.spotify.com/", isCustom: false },
+            { text: "YouTube", url: "https://www.youtube.com/", isCustom: false }
+        ]},
+        { name: "News", links: [
+            { text: "CNN", url: "https://edition.cnn.com/", isCustom: false },
+            { text: "Fox News", url: "https://www.foxnews.com/", isCustom: false },
+            { text: "Google News", url: "https://news.google.com/", isCustom: false }
+        ]},
+        { name: "Search", links: [
+            { text: "Google", url: "https://www.google.com/", isCustom: false },
+            { text: "DuckDuckGo", url: "https://duckduckgo.com/", isCustom: false },
+            { text: "Bing", url: "https://www.bing.com/", isCustom: false }
+        ]},
+        { name: "Shopping", links: [
+            { text: "Amazon", url: "https://www.amazon.com/", isCustom: false },
+            { text: "eBay", url: "https://www.ebay.com/", isCustom: false }
+        ]},
+        { name: "Social", links: [
+            { text: "Reddit", url: "https://www.reddit.com/", isCustom: false },
+            { text: "Twitter (X)", url: "https://twitter.com/", isCustom: false },
+            { text: "Discord", url: "https://discord.com/", isCustom: false }
+        ]},
+        { name: "Tech", links: [
+            { text: "TechCrunch", url: "https://techcrunch.com/", isCustom: false },
+            { text: "The Verge", url: "https://www.theverge.com/", isCustom: false },
+            { text: "GitHub", url: "https://github.com/", isCustom: false }
+        ]}
+    ];
+
+    // --- 3. Elemen DOM (Hanya yang perlu diakses) ---
+
+    const root = document.documentElement;
+    const configModal = document.getElementById('config-modal');
+    const editModal = document.getElementById('edit-modal');
+    const addModal = document.getElementById('add-modal'); 
+    const searchInput = document.getElementById('search-input');
+    const radiusInput = document.getElementById('radius-input');
+    const radiusValueSpan = document.getElementById('radius-value');
+    const linkColumnsContainer = document.getElementById('link-columns');
+    const linkListContainer = document.getElementById('link-list-container');
+    const addLinkForm = document.getElementById('add-link-form'); 
+    const linkCategorySelect = document.getElementById('link-category'); 
+    
+    // --- 4. Fungsi Utama Cloud Sync ---
+
+    /** Mendapatkan link dari Firestore. Jika tidak ada, simpan Default Links. */
+    async function getLinks() {
+        try {
+            const docRef = doc(db, "users", USER_DATA_ID);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                return data.links || defaultLinks; // Kembalikan data link dari cloud
+            } else {
+                // Jika data belum ada di Cloud, simpan default link dulu
+                await saveLinks(defaultLinks);
+                return defaultLinks;
+            }
+        } catch (e) {
+            console.error("Gagal mengambil data dari Cloud Firestore:", e);
+            // Gagal ambil data? Coba lihat di Local Storage (Fallback)
+            const savedLinks = localStorage.getItem('ichi_links');
+            if (savedLinks) {
+                alert("Gagal terhubung ke Cloud. Memuat dari Local Storage.");
+                return JSON.parse(savedLinks);
+            }
+            alert("Gagal memuat data link dari mana pun. Menggunakan link default.");
+            return defaultLinks;
+        }
+    }
+
+    /** Menyimpan link ke Firestore. */
+    async function saveLinks(links) {
+        const filteredLinks = links.filter(cat => cat.links && cat.links.length > 0);
+        
+        // Simpan ke Local Storage sebagai Fallback
+        localStorage.setItem('ichi_links', JSON.stringify(filteredLinks));
+
+        try {
+            const docRef = doc(db, "users", USER_DATA_ID);
+            await setDoc(docRef, { links: filteredLinks });
+            
+            // Re-render tampilan setelah menyimpan
+            renderLinksToStartpage(filteredLinks);
+            populateCategorySelect(filteredLinks);
+
+        } catch (e) {
+            console.error("Gagal menyimpan link ke Cloud Firestore:", e);
+            alert("Gagal menyimpan link ke Cloud Firestore. Data hanya tersimpan di browser ini (Local Storage).");
+        }
+    }
+
+    // --- 5. Render & Global Functions (Diperbarui agar async) ---
+
+    function renderLinksToStartpage(links) {
+        let html = '';
+        let count = 0;
+        
+        html += '<div class="category-group">';
+        
+        links.forEach((category) => {
+            if (count > 0 && count % 3 === 0) {
+                html += '</div><div class="category-group">';
+            }
+
+            if (category.links && category.links.length > 0) {
+                html += `
+                    <div class="category">
+                        <h3>${category.name}</h3>
+                        <ul>
+                            ${category.links.map(link => 
+                                `<li><a href="${link.url}">${link.text}</a></li>`
+                            ).join('')}
+                        </ul>
+                    </div>
+                `;
+                count++;
+            }
+        });
+
+        html += '</div>';
+        linkColumnsContainer.innerHTML = html;
+    }
+
+    // Dipanggil saat Edit Link
+    window.renderEditModal = async function() {
+        const allLinks = await getLinks();
+        let html = '';
+
+        allLinks.forEach((category) => {
+            html += `<div class="edit-category-group">`;
+            html += `<h4>${category.name}</h4>`;
+            
+            category.links.forEach((link, linkIndex) => {
+                // ... (Logic HTML untuk Edit Modal dipertahankan)
+                html += `
+                    <div class="edit-link-item" data-category="${category.name}" data-index="${linkIndex}" data-custom="${link.isCustom}">
+                        <div class="edit-link-info">
+                            ${link.text} 
+                            <span>${link.url}</span>
+                            ${link.isCustom ? '<span style="color:red;">(CUSTOM)</span>' : '<span style="opacity:0.5;">(DEFAULT)</span>'}
+                        </div>
+                        <div class="edit-link-actions">
+                            <button onclick="editLink('${category.name}', ${linkIndex})">Edit</button>
+                            <button onclick="deleteLink('${category.name}', ${linkIndex})">Hapus</button>
+                        </div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+        });
+        
+        linkListContainer.innerHTML = html;
+        editModal.style.display = 'block';
+    }
+
+    // Global: Edit Link
+    window.editLink = async function(categoryName, linkIndex) {
+        let links = await getLinks();
+        const category = links.find(cat => cat.name === categoryName);
+        const link = category.links[linkIndex];
+        
+        const newText = prompt(`Edit Teks untuk "${link.text}":`, link.text);
+        if (newText === null) return; 
+
+        const newUrl = prompt(`Edit URL untuk "${newText}":`, link.url);
+        if (newUrl === null) return; 
+        
+        if (newText.trim() !== "") {
+             link.text = newText.trim();
+        }
+        if (newUrl.trim() !== "") {
+             link.url = newUrl.trim();
+        }
+
+        link.isCustom = true; 
+
+        await saveLinks(links); 
+        window.renderEditModal(); 
+    }
+
+    // Global: Delete Link
+    window.deleteLink = async function(categoryName, linkIndex) {
+        if (!confirm('Yakin ingin menghapus link ini? (Perubahan akan disimpan di Cloud)')) return;
+        
+        let links = await getLinks();
+        const category = links.find(cat => cat.name === categoryName);
+
+        category.links.splice(linkIndex, 1); 
+        
+        await saveLinks(links); 
+        window.renderEditModal(); 
+        alert('Link berhasil dihapus dan disimpan ke Cloud.');
+    }
+
+    // Fungsi Add Link (Diperbarui agar async)
+    function populateCategorySelect(links) {
+        linkCategorySelect.innerHTML = '<option value="">-- Pilih Kategori --</option>'; 
+        const categories = links.map(cat => cat.name);
+        
+        categories.forEach(catName => {
+            const option = document.createElement('option');
+            option.value = catName;
+            option.textContent = catName;
+            linkCategorySelect.appendChild(option);
+        });
+    }
+
+    addLinkForm.addEventListener('submit', async function(event) {
+        event.preventDefault();
+
+        const text = document.getElementById('link-text').value.trim();
+        const url = document.getElementById('link-url').value.trim();
+        const selectedCategory = document.getElementById('link-category').value.trim();
+        const newCategory = document.getElementById('new-category-name').value.trim();
+        
+        if (!text || !url) {
+            alert('Teks Link dan URL tidak boleh kosong.');
+            return;
+        }
+
+        let categoryName = newCategory || selectedCategory;
+
+        if (!categoryName) {
+            alert('Pilih Kategori atau isi Kategori Baru.');
+            return;
+        }
+
+        let links = await getLinks(); // Dapatkan data terbaru dari Cloud
+        let existingCategory = links.find(cat => cat.name.toLowerCase() === categoryName.toLowerCase());
+
+        const newLink = { text: text, url: url, isCustom: true };
+
+        if (existingCategory) {
+            existingCategory.links.push(newLink);
+        } else {
+            const newCategoryObject = { name: categoryName, links: [newLink] };
+            links.push(newCategoryObject);
+        }
+
+        await saveLinks(links); // Simpan kembali ke Cloud
+
+        addLinkForm.reset();
+        document.getElementById('link-url').value = 'https://';
+        addModal.style.display = 'none';
+        alert(`Link '${text}' berhasil ditambahkan ke kategori '${categoryName}' dan disimpan di Cloud!`);
+    });
+
+    // --- 6. Logika Konfigurasi Warna (Dipertahankan) ---
+
+    // Semua fungsi Load/Save Settings menggunakan Local Storage karena settings warna sifatnya lokal di browser
+    // ... (Fungsi loadAndApplySettings, form submit, dan reset dipertahankan seperti sebelumnya)
+    function loadAndApplySettings() {
+        let settings = defaultSettings;
+        const savedSettings = localStorage.getItem('ichi_settings');
+        
+        if (savedSettings) {
+            settings = JSON.parse(savedSettings);
+        }
+        
+        for (const [key, value] of Object.entries(settings)) {
+            root.style.setProperty(key, value);
+        }
+        
+        document.getElementById('bg-color-input').value = settings['--bg-color'] || defaultSettings['--bg-color'];
+        document.getElementById('text-color-input').value = settings['--text-color'] || defaultSettings['--text-color'];
+        document.getElementById('hover-color-input').value = settings['--hover-color'] || defaultSettings['--hover-color'];
+        
+        const currentRadius = parseInt(settings['--border-radius']) || 0;
+        radiusInput.value = currentRadius;
+        radiusValueSpan.textContent = currentRadius;
+    }
+
+    radiusInput.oninput = function() { radiusValueSpan.textContent = this.value; }
+
+    document.getElementById('color-config-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        
+        const newBgColor = document.getElementById('bg-color-input').value;
+        const newTextColor = document.getElementById('text-color-input').value;
+        const newHoverColor = document.getElementById('hover-color-input').value;
+        const newRadius = document.getElementById('radius-input').value + 'px';
+
+        root.style.setProperty('--bg-color', newBgColor);
+        root.style.setProperty('--text-color', newTextColor);
+        root.style.setProperty('--hover-color', newHoverColor);
+        root.style.setProperty('--border-radius', newRadius);
+        
+        const newSettings = { '--bg-color': newBgColor, '--text-color': newTextColor, '--hover-color': newHoverColor, '--border-radius': newRadius };
+        localStorage.setItem('ichi_settings', JSON.stringify(newSettings));
+
+        configModal.style.display = 'none';
+    });
+
+    document.getElementById('reset-btn').addEventListener('click', function() {
+        localStorage.removeItem('ichi_settings');
+        for (const [key, value] of Object.entries(defaultSettings)) {
+            root.style.setProperty(key, value);
+        }
+        loadAndApplySettings(); 
+        alert('Pengaturan berhasil dikembalikan ke default!');
+        configModal.style.display = 'none';
+    });
+
+    // --- 7. Logika Modal & Inisialisasi ---
+
+    document.getElementById('config-btn').onclick = function(event) { event.preventDefault(); configModal.style.display = 'block'; }
+    document.getElementById('edit-link-btn').onclick = function(event) { event.preventDefault(); window.renderEditModal(); }
+    document.getElementById('add-link-btn').onclick = function(event) { event.preventDefault(); addModal.style.display = 'block'; } 
+
+    document.querySelectorAll('.config-close-btn').forEach(btn => btn.onclick = function() { configModal.style.display = 'none'; });
+    document.querySelectorAll('.edit-close-btn').forEach(btn => btn.onclick = function() { editModal.style.display = 'none'; });
+    document.querySelectorAll('.add-close-btn').forEach(btn => btn.onclick = function() { addModal.style.display = 'none'; });
+
+    window.onclick = function(event) {
+        if (event.target === configModal) { configModal.style.display = 'none'; }
+        if (event.target === editModal) { editModal.style.display = 'none'; }
+        if (event.target === addModal) { addModal.style.display = 'none'; }
+    }
+
+    // Initial setup saat dokumen selesai dimuat
+    window.initializeApp = async function() {
+        // Hapus teks loading
+        const loadingText = document.getElementById('loading-text');
+        if (loadingText) loadingText.remove();
+
+        const links = await getLinks();
+        loadAndApplySettings(); 
+        renderLinksToStartpage(links);
+        populateCategorySelect(links);
+    };
+    
+    // Logika Search
+    searchInput.addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+            const query = searchInput.value.trim();
+            if (query) {
+                const searchUrl = 'https://www.google.com/search?q='; 
+                window.location.href = searchUrl + encodeURIComponent(query);
+            }
+        }
+    });
+
+    // Panggil inisialisasi
+    window.initializeApp();
+</script>
+
+</body>
+</html>
