@@ -146,7 +146,7 @@
         }
 
         .category h3 { cursor: pointer; margin-bottom: 0; font-size: 1em; text-transform: capitalize; }
-        .category h3::before { content: '>'; color: var(--text-color); margin-right: 5px; transition: transform 0.2s ease-out; display: inline-block; }
+        .category h3::before { content: '> '; color: var(--text-color); margin-right: 5px; transition: transform 0.2s ease-out; display: inline-block; }
         
         .category ul { 
             list-style: none; 
@@ -165,13 +165,13 @@
         }
         
         .category:hover ul { display: block; }
-        .category:hover h3::before { content: 'v'; }
+        .category:hover h3::before { content: '> '; }
         
         .category ul li { 
             margin-bottom: var(--line-spacing); 
             font-size: 0.9em; 
         }
-        .category ul li::before { content: '>> '; color: var(--text-color); }
+        .category ul li::before { content: '• '; color: var(--text-color); }
         
         .footer-options { 
             width: 100%; 
